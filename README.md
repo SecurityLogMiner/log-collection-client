@@ -5,9 +5,9 @@ Add additional log sources from to be sent to a centralized server
 ## Table of Contents
 
 - [Project Management](#project-management)
-  - [Using and Updating the Project Flowchart](#using-and-updating-the-project-flowchart)
-  - [Creating Pull Requests](#creating-pull-requests)
-  - [Creating Issues](#creating-issues)
+    - [Using and Updating the Project Flowchart](#using-and-updating-the-project-flowchart)
+    - [Creating Pull Requests](#creating-pull-requests)
+    - [Creating Issues](#creating-issues)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Contributing](#contributing)
