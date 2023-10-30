@@ -18,43 +18,30 @@ Add additional log sources from to be sent to a centralized server
 
 ## Project Management
 
-This section covers key aspects of project management and collaboration.
-
-### Using and Updating the Project Flowchart
-
-Explain how the project flowchart is used and how contributors can update it. You can provide instructions and guidelines for managing the project's flowchart.
-
 ### Creating Pull Requests
-
-Describe the process for creating and submitting pull requests (PRs) to contribute to the project. Include details such as branch naming conventions, code review expectations, and any required PR templates.
+Merging PRs will require the approval of all 4 members of the team at this time.
+Feature branches do not have this restriction.
 
 ### Creating Issues
-
-Explain how to create and manage issues within the project. Specify the purpose of issues, how to report bugs, request features, or discuss improvements. Include guidelines on issue titles, labels, and how to provide necessary information for issue tracking.
+Mark issues with relevant tags.
 
 ## Getting Started
-
-Provide instructions for getting started with the project, including prerequisites, installation, and initial setup.
+TBD
 
 ## Usage
-
-Demonstrate how to use the project or provide examples of common use cases.
+TBD
 
 ## Contributing
-
-Explain how others can contribute to the project, whether through code contributions, documentation improvements, or reporting issues. Include guidelines for submitting contributions.
+TBD
 
 ## License
-
-Specify the project's license information, if applicable.
+Apache 2.0
 
 ## Acknowledgments
-
-You can use this section to credit individuals, libraries, or tools that have contributed to your project.
+Syn Ack Fin
 
 ## Contact
-
-Provide contact information or ways for users and contributors to get in touch with you or the project team.
+Discord, if you know, you know
 
 [Back to top](#table-of-contents)
 
