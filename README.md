@@ -9,6 +9,7 @@ Add additional log sources from to be sent to a centralized server
     - [Creating Pull Requests](#creating-pull-requests)
     - [Creating Issues](#creating-issues)
 - [Getting Started](#getting-started)
+    - ![System Design](link to repo)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
