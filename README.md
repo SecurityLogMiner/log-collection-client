@@ -9,7 +9,7 @@ Add additional log sources from to be sent to a centralized server
     - [Workflow](#workflow)
     - [Creating Issues](#creating-issues)
 - [Getting Started](#getting-started)
-    - [System Design](https://github.com/SecurityLogMiner/log-collection-backend/blob/system-design/log-collection-backend.drawio.png)
+    - [System Design](https://github.com/SecurityLogMiner/log-collection-backend/blob/features/log-collection-backend.drawio.png)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
