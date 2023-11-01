@@ -62,7 +62,7 @@ Add additional log sources from to be sent to a centralized server
 1. **Iterate if Needed:** If there are suggested changes, the developer makes the necessary adjustments in their feature branch and pushes the changes to the PR.
 
 **10: Merge into DevApi Branch**
-1. **Merge into Main:** Once the code in the PR is approved, it can be merged into the DevApi branch.
+1. **Merge into DevApi:** Once the code in the PR is approved, it can be merged into the DevApi branch.
 
 **11: Clean Up**
 1. **Delete FeatureName Branch:** After merging, the developer can delete the FeatureName branch both locally and in the central repository if that feature is complete.
