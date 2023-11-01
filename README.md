@@ -26,7 +26,8 @@ Feature branches do not have this restriction.
 Mark issues with relevant tags.
 
 ## Getting Started
-TBD
+Install Rust on your local machine. Use the following link to get setup quickly:
+[rust setup](https://www.rust-lang.org/tools/install)
 
 ## Usage
 TBD
