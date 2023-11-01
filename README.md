@@ -6,8 +6,8 @@ Add additional log sources from to be sent to a centralized server
 
 - [Project Management](#project-management)
     - [Branch Types](#branch-types)
-    - [Creating Feature branches](#creating-feature-branches)
-    - [Creating Pull Requests](#creating-pull-requests)
+    - [Workflow](#workflow)
+    - [Creating Issues](#creating-issues)
 - [Getting Started](#getting-started)
     - [System Design](https://github.com/SecurityLogMiner/log-collection-backend/blob/system-design/log-collection-backend.drawio.png)
 - [Usage](#usage)
@@ -26,9 +26,9 @@ Add additional log sources from to be sent to a centralized server
 - DevApi: Created from the Development branch. Unlike the Development branch,
   this branch does not require 4 approvals. It will act as a buffer branch
   between Development and the following Features branch (see below).
-- Features: This branch is where the <FeatureName> branches will be pushed and fetched
+- Features: This branch is where the FeatureName branches will be pushed and fetched
   from until the target features are complete. 
-- <FeatureName>: These branches will be named by their feature, and pushed into the
+- FeatureName: These branches will be named by their feature, and pushed into the
   Features branch and pulled into the other feature branches so all team members
   have the same codebase while working on their own protion of the product.
 
@@ -37,20 +37,20 @@ Add additional log sources from to be sent to a centralized server
 **1: Clone the Repository**
 1. **Clone the Repository:** Each developer clones the central repository to their local machine using `git clone <repository_url>`.
 
-**2: Create <FeatureName> Branches**
-1. **Create a <FeatureName> Branch:** When working on a new feature or bug fix, each developer creates a new branch using `git checkout -b features/your-feature-name`. This keeps their changes isolated from the main codebase.
+**2: Create FeatureName Branches**
+1. **Create a FeatureName Branch:** When working on a new feature or bug fix, each developer creates a new branch using `git checkout -b features/your-feature-name`. This keeps their changes isolated from the main codebase.
 
 **3: Develop and Commit Changes**
-1. **Work on Features:** Developers make code changes and commit them to their <FeatureName> branch using `git add` and `git commit`.
+1. **Work on Features:** Developers make code changes and commit them to their FeatureName branch using `git add` and `git commit`.
 
 **4: Pull Updates from the closest upstream branch**
-1. **Stay Up to Date:** Regularly, developers should pull the latest changes from the parent branch into their <FeatureName> branches using `git pull origin features`.
+1. **Stay Up to Date:** Regularly, developers should pull the latest changes from the parent branch into their FeatureName branches using `git pull origin features`.
 
 **5: Resolve Conflicts (if any)**
 1. **Conflict Resolution:** If there are conflicts, developers resolve them by editing the conflicting files and then committing the resolved changes.
 
-**6: Push <FeatureName> Branches**
-1. **Push <FeatureName> Branches:** Developers push their <FeatureName> branches to the Features branch using `git push origin features/your-feature-name`.
+**6: Push FeatureName Branches**
+1. **Push FeatureName Branches:** Developers push their FeatureName branches to the Features branch using `git push origin features/your-feature-name`.
 
 **7: Create Pull Requests**
 1. **Create Pull Requests:** When a developer finishes working on a feature or bug fix, they create a pull request (PR). This initiates a code review process.
@@ -65,7 +65,7 @@ Add additional log sources from to be sent to a centralized server
 1. **Merge into Main:** Once the code in the PR is approved, it can be merged into the DevApi branch.
 
 **11: Clean Up**
-1. **Delete <FeatureName> Branch:** After merging, the developer can delete the <FeatureName> branch both locally and in the central repository if that feature is complete.
+1. **Delete FeatureName Branch:** After merging, the developer can delete the FeatureName branch both locally and in the central repository if that feature is complete.
 
 **12: Rinse and Repeat**
 1. **Repeat:** Developers continue working on new features or bug fixes by creating new feature branches and following the same process.
