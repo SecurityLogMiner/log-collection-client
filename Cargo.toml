@@ -6,3 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# https://rust-cli.github.io/book/tutorial/cli-args.html
+clap = { version = "4.0", features = ["derive"] }
+anyhow = {version = "1.0"}
+
+# For JSON parsing https://serde.rs/impl-deserialize.html
+serde = { version = "1.0", features = ["derive"] }
+serde_json = {version = "1.0"}
