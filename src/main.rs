@@ -1,31 +1,9 @@
 // Read from a file and detect when new data is appended to that file
-<<<<<<< HEAD
 use std::process::Command;
 
-fn main() {
-    run_tail_f();
-}
-
-/*
- * The 'Producer' as defined in the system design file.
- *  - https://github.com/SecurityLogMiner/log-collection-backend/tree/features
- * This function should ideally take a Path parameter. The goal here is to
- * read new data that has been appended to the file and send it to a 
- * Consumer.
- *
- * To test this function, run the binary and then echo "new data" >> testfile 
- */
-fn run_tail_f() {
-    let mut tail_f = Command::new("tail");
-    tail_f.arg("-f");
-    tail_f.arg("testfile.txt");
-    let res = tail_f.status().expect("failed");
-    println!();
-=======
-#![allow(unused)]
+#[allow(unused)]
 use clap::Parser;
 use anyhow::{Context, Result};
-
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fs;
@@ -45,13 +23,32 @@ struct Config {
     log_file_path: String,
 }
 
+
 fn main() {
     let name = String::from("Security Log Collector");
     println!("Hello, {}",name);
     command_line();
-    
->>>>>>> features
+    // see Comment A
+    run_tail_f();
 }
+
+/* Comment A
+ * The 'Producer' as defined in the system design file.
+ *  - https://github.com/SecurityLogMiner/log-collection-backend/tree/features
+ * This function should ideally take a Path parameter. The goal here is to
+ * read new data that has been appended to the file and send it to a 
+ * Consumer.
+ *
+ * To test this function, run the binary and then echo "new data" >> testfile 
+ */
+fn run_tail_f() {
+    let mut tail_f = Command::new("tail");
+    tail_f.arg("-f");
+    tail_f.arg("testfile.txt");
+    let res = tail_f.status().expect("failed");
+    println!();
+}
+
 
 /* Testing CLI arguments into a textfile */
 fn command_line() ->Result<()>{
