@@ -1,5 +1,4 @@
 import socket
-
 # Target IP address and port
 target_ip = '52.15.167.81'  # Replace with the IP address of the target machine
 target_port = 45612  # Replace with the desired port number
