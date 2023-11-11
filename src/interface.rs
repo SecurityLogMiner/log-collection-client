@@ -1,4 +1,3 @@
-
 #[allow(unused)]
 use clap::Parser;
 use anyhow::{Context, Result};
@@ -8,7 +7,7 @@ use std::fs;
 
 
 /* Creating a test struct CLI to test command line arguments */
-#[derive(Parser)]
+#[derive(Parser,Debug)]
 struct CLi{
     pattern: String,
     path: std::path::PathBuf,
@@ -22,25 +21,8 @@ struct Config {
 }
 
 /* Testing CLI arguments into a textfile */
-pub fn command_line() ->Result<()>{
+pub fn command_line() ->Result<u8>{
     let args = CLi::parse();
-    let path_name = &args.path;
-    let content = match std::fs::read_to_string(path_name){
-        Ok(content) => content,
-        Err(error) => {
-            println!("{}: {}", path_name.to_string_lossy(), error);
-            return Err(error)
-                .with_context(|| format!("could not read file `{}`", path_name.to_string_lossy()));
-        }
-    };
-    
-    println!("File Content: {}", content);
-    let log_entries: Vec<Config> = serde_json::from_str(&content)
-        .with_context(|| "failed to parse JSON data")?;
-
-    println!("Log Entries:");
-    for entry in &log_entries {
-        println!("{:?}", entry);
-    }
-    Ok(())
+    println!("{:?}",args);
+    Ok(0)
 }

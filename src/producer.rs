@@ -7,7 +7,7 @@ use std::process::Command;
  * read new data that has been appended to the file and send it to a 
  * Consumer.
  *
- * To test this function, run the binary and then echo "new data" >> testfile 
+ * To test this function, [TODO insert test instructions] 
  */
 pub fn run_tail_f() {
     let mut tail_f = Command::new("tail");
