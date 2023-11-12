@@ -1,7 +1,7 @@
 #!/sbin/bash
 
 # Define the log directory path
-LOG_DIR="/etc/logminer/logs"
+LOG_DIR="/var/log/logminer/logs"
 
 # Create the directory if it doesn't exist
 if [ ! -d "$LOG_DIR" ]; then
