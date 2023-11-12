@@ -1,13 +1,13 @@
 use std::env;
 mod producer;
-use crate::producer::{run_tail_f};
+//use crate::producer::{run_tail_f};
 
 mod interface;
-use interface::{command_line,read_config};
+use interface::{read_config};
 
 fn main() {
     match env::args().len() {
-        1 => {read_config();}
+        1 => {let _ = read_config();}
         _ => {println!("handle command line usage");}
     }
 }
