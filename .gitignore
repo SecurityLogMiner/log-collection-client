@@ -15,8 +15,8 @@ Cargo.lock
 
 
 # weird draw.io backup files when diagram is open
-$log-collection-client.drawio.bkp
-$log-collection-client.drawio.*
+.$log-collection-client.drawio.bkp
+.$log-collection-client.drawio.*
 
 # Added by cargo
 
