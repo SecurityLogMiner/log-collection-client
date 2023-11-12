@@ -24,3 +24,6 @@ Cargo.lock
 
 # Added by EndePointe
 *.exe
+
+# test config file
+test.config
