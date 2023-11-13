@@ -12,3 +12,21 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+
+# weird draw.io backup files when diagram is open
+.$log-collection-client.drawio.bkp
+.$log-collection-client.drawio.*
+
+# Added by cargo
+
+/target
+
+# create your own commit script if youd like
+commit.sh
+
+# Not ready for windows development
+*.exe
+
+# test config file
+test.config
