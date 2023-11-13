@@ -1,3 +1,0 @@
-test line number 1
-hello
-this should be the third line

@@ -15,12 +15,18 @@ Cargo.lock
 
 
 # weird draw.io backup files when diagram is open
-*.bkp
-
+.$log-collection-client.drawio.bkp
+.$log-collection-client.drawio.*
 
 # Added by cargo
 
 /target
 
-# Added by EndePointe
+# create your own commit script if youd like
+commit.sh
+
+# Not ready for windows development
 *.exe
+
+# test config file
+test.config
