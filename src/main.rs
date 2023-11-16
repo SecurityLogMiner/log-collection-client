@@ -2,8 +2,8 @@ use std::env;
 mod producer;
 //use crate::producer::{run_tail_f};
 
-mod interface;
-use interface::{read_config};
+mod config;
+use config::{read_config};
 
 fn main() {
     match env::args().len() {
