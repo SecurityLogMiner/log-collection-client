@@ -26,7 +26,6 @@ struct Config {
     credentials: String // TLS needed
 }}
 
-
 pub fn
 read_config() -> Result<u8, Box<dyn std::error::Error>> {
     let file = File::open("test.config")?;
@@ -34,10 +33,14 @@ read_config() -> Result<u8, Box<dyn std::error::Error>> {
     let mut result;
     for line in reader.lines() {
         result = line?.clone();
-        let res = &check_config_file(result.split(" ").collect::<Vec<_>>()[0]);
-        match res {
-            Some(val) => println!("{:?}",val),
-            None => println!("not a line with data")
+        let config_field = result.split(" ").collect::<Vec<_>>();
+        println!("config_field: {:?}", config_field);
+        let field1 = &check_config_file(config_field[0]);
+        match field1 {
+            Some(val) => println!("config member: {:?}, file data: {:?}",
+                                  val,
+                                  config_field[0].to_string() == val.to_string()),
+            None => {} 
         }
     }
     /*
