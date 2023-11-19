@@ -20,9 +20,7 @@ Add additional log sources from to be sent to a centralized server
 
 ### Branch Types
 - Release: The main branch where well tested code resides.
-- Development: Created from the Prototype branch, acting as a buffer between the
-  prototype and feature branches. This branch requires 4 approvals before merging
-  the dev-api branch into it.
+- Development: Features that have been tested will continue to merge to this upstream. 
 - Features: Meaningful addtions to the codebase are tested and merged upstream.
 - Working: Where lessons are learned.
 
