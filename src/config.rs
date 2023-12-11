@@ -27,25 +27,28 @@ struct Config {
 }}
 
 pub fn
-read_config() -> Result<u8, Box<dyn std::error::Error>> {
+read_config() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let mut fields: Vec<String> = Vec::new();
     let file = File::open("test.config")?;
     let reader = BufReader::new(file);
     let mut result;
     for line in reader.lines() {
         result = line?.clone();
         let config_field = result.split(" ").collect::<Vec<_>>();
-        println!("config_field: {:?}", config_field);
         let field1 = &check_config_file(config_field[0]);
         match field1 {
-            Some(val) => println!("config member: {:?}, file data: {:?}",
-                                  val,
-                                  config_field[0].to_string() == val.to_string()),
+            Some(val) => {
+                if config_field[0].to_string() !=  "#".to_string() &&
+                    config_field[0].to_string() == "log_file_path".to_string() {
+                        fields.push(config_field[1].to_string());
+                }
+            },
             None => {} 
         }
     }
     /*
      * TODO read the config entries and establish connection with server*/
-    Ok(0)
+    Ok(fields)
 }
 
 /*
@@ -98,24 +101,4 @@ check_config_file(entry: &str) -> Option<&str> {
 
 
 
-// UNUSED Section
-/*
-#[derive(Parser,Debug)]
-struct Args {
-    config: String,
-}
-// the user could provide a path to a different config or simply get help with using the command
-pub fn 
-command_line() -> Result<Config, Box<dyn std::error::Error>>{
-    let args = Args::try_parse();
-    println!("{:?}",args);
-    Ok(Config {
-        server_address: String::from("server address"),
-        server_port: 123,
-        log_file_path: String::from("path to log file"),
-        field_values: vec!["test".to_string(), "field".to_string(), "values".to_string()],
-        credentials: String::from("credentials"),
-    })
-}
-*/
 

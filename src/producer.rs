@@ -9,10 +9,14 @@ use std::process::Command;
  *
  * To test this function, [TODO insert test instructions] 
  */
-pub fn run_tail_f() {
+pub fn run_tail_f(f: String) -> Result<std::process::Output, Box<dyn std::error::Error>> {
+    /*
+    let tail_f = Command::new("tail").arg("-f").arg(f.to_string())
+        .output();
+    Ok(tail_f?)
+    */
     let mut tail_f = Command::new("tail");
     tail_f.arg("-f");
-    tail_f.arg("testfile.txt");
+    tail_f.arg(f.to_string());
     let res = tail_f.status().expect("failed");
-    println!();
 }
