@@ -19,4 +19,5 @@ pub fn run_tail_f(f: String) -> Result<std::process::Output, Box<dyn std::error:
     tail_f.arg("-f");
     tail_f.arg(f.to_string());
     let res = tail_f.status().expect("failed");
+    Ok(res)
 }
