@@ -1,7 +1,7 @@
 
 use std::env;
 mod producer;
-use crate::producer::{run_tail_f};
+use crate::producer::{create_log_stream};
 mod config;
 use config::{read_config};
 use std::net::TcpStream;
@@ -13,8 +13,12 @@ fn main() {
     match env::args().len() {
         1 => {
             config_data = read_config();
-            let tail_output = run_tail_f(config_data.unwrap()[0].to_string());
-            println!("{}", String::from(&tail_output));
+            if let Err(err) = create_log_stream(
+                config_data.unwrap()[0].to_string()) {
+                eprintln!("Error: {}", err);
+            }
+            //let tail_output = run_tail_f(config_data.unwrap()[0].to_string());
+            //println!("{}", String::from(&tail_output));
         }
         _ => {println!("handle command line usage");}
     }
