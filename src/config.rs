@@ -24,6 +24,8 @@ struct Config {
     log_file_path: String,
     field_values: Vec<String>,
     credentials: String // TLS needed
+    db_host: String,
+    db_port: u16,
 }}
 
 pub fn
@@ -62,31 +64,40 @@ check_config_file(entry: &str) -> Option<&str> {
     None
 }
 
+//still testing with and messing around with this code.
 
 
+/*fn listen_for_connections(port: u16) -> Result<(), String> {
+    let listener = TcpListener::bind(format!("0.0.0.0:{}", port)).map_err(|e| e.to_string())?;
 
+    println!("Server listening on port {}", port);
 
+    // Accept connections and process them serially
+    for stream in listener.incoming() {
+        match stream {
+            Ok(mut stream) => {
+                println!("New connection: {}", stream.peer_addr().unwrap());
+                
+                // Example: Read data from the connection
+                let mut buffer = [0; 1024];
+                match stream.read(&mut buffer) {
+                    Ok(size) => {
+                        // Echo the data back to the client
+                        stream.write_all(&buffer[..size]).unwrap();
+                    }
+                    Err(e) => {
+                        println!("Failed to read from connection: {}", e);
+                    }
+                }
+            }
+            Err(e) => {
+                println!("Connection failed: {}", e);
+            }
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Ok(())
+}*/
 
 
 
