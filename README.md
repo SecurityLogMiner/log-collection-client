@@ -1,6 +1,6 @@
 # Log Collection Client 
 
-Add additional log sources from to be sent to a centralized server
+A service that collects and sends system event data to a server.
 
 ## Table of Contents
 
