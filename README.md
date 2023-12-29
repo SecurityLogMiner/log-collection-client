@@ -1,4 +1,4 @@
-# Log Collection Backend
+# Log Collection Client 
 
 Add additional log sources from to be sent to a centralized server
 
