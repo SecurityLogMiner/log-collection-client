@@ -24,6 +24,8 @@ struct Config {
     log_file_path: String,
     field_values: Vec<String>,
     credentials: String // TLS needed
+    db_host: String,
+    db_port: u16,
 }}
 
 pub fn
@@ -61,39 +63,6 @@ check_config_file(entry: &str) -> Option<&str> {
     }
     None
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

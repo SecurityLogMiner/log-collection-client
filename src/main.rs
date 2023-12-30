@@ -10,4 +10,10 @@ fn main() {
         1 => {let _ = read_config();}
         _ => {println!("handle command line usage");}
     }
+
+    match listen_for_connections(config.server_port) {
+        Ok(_) => println!("Listening for incoming connections"),
+        Err(err) => eprintln!("Error listening for connections: {}", err),
+    }
 }
+
