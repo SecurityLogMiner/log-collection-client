@@ -12,6 +12,7 @@ fn main() {
     match env::args().len() {
         1 => {
             config_data = read_config();
+            println!("{:?}",config_data);
             if let Err(err) = create_log_stream(
                 config_data.unwrap()[0].to_string()) {
                 eprintln!("Error: {}", err);

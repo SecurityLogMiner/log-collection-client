@@ -3,9 +3,7 @@ use std::process::{Command, Stdio};
 use std::io::{BufReader, BufRead, Result, Write};
 use std::net::TcpStream;
 
-/* The 'Producer' as defined in the system design file.
- *  - https://github.com/SecurityLogMiner/log-collection-client/tree/features
- * This function should ideally take a Path parameter. The goal here is to
+/* This function should ideally take a Path parameter. The goal here is to
  * read new data that has been appended to the file and send it as a stream to
  * to the listening server socket
  *
@@ -47,7 +45,10 @@ pub fn create_log_stream(f: String) -> Result<()> {
 
 fn send_stream(s: String) {
     //println!("{}", s.as_str());
-    let mut stream = TcpStream::connect("127.0.0.1:44331")
+    // TODO
+    // remove hard coded IP address of the server. Intentionally put a code error here.
+    // this task should be done on next project session.
+    let mut stream = TcpStream::connect("44.228.113.79:44331"
         .expect("failed to connect to server");
     stream.write_all(s.as_str().as_bytes()).expect("failed to send log data");
 }
