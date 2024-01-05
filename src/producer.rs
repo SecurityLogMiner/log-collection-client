@@ -1,18 +1,42 @@
 // Read from a file and detect when new data is appended to that file
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::io::{BufReader, BufRead, Result, Write};
+use std::net::{TcpStream, SocketAddr};
+use crate::config::{Config};
 
-/* The 'Producer' as defined in the system design file.
- *  - https://github.com/SecurityLogMiner/log-collection-client/tree/features
- * This function should ideally take a Path parameter. The goal here is to
- * read new data that has been appended to the file and send it to a 
- * Consumer.
- *
- * To test this function, [TODO insert test instructions] 
- */
-pub fn run_tail_f() {
-    let mut tail_f = Command::new("tail");
-    tail_f.arg("-f");
-    tail_f.arg("testfile.txt");
-    let res = tail_f.status().expect("failed");
-    println!();
+pub fn create_log_stream(config: Config) -> Result<()> {
+    println!("{:?}",config.log_file_path);
+    if let Ok(mut child) = Command::new("tail")
+        .arg("-f")
+        .arg(config.log_file_path)
+        .stdout(Stdio::piped())
+        .spawn() {
+            if let Some(stdout) = child.stdout.take() {
+                let addr = config.server_address.to_string() + 
+                        ":" + &config.server_port.to_string();
+                let mut stream = TcpStream::connect(&addr)
+                    .expect("failed to connect to server");
+                let reader = BufReader::new(stdout);
+                for line in reader.lines() {
+                    match line {
+                        Ok(text) => {
+                            send_stream(text, &stream);                    
+                        }
+                        Err(err) => {
+                            eprintln!("error reading the log: {}", err);
+                            break;
+                        }
+                    }
+                }
+            }
+            let _ = child.wait();
+            Ok(())
+        } else {
+            Err(std::io::Error::new(std::io::ErrorKind::Other,
+                                    "Error creating log stream"))
+        }
+}
+
+fn send_stream(data: String, mut stream: &TcpStream) {
+    stream.write_all(data.as_str().as_bytes()).expect("failed to send log data");
 }
