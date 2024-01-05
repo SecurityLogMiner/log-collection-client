@@ -1,32 +1,26 @@
 // Read from a file and detect when new data is appended to that file
 use std::process::{Command, Stdio};
 use std::io::{BufReader, BufRead, Result, Write};
-use std::net::TcpStream;
+use std::net::{TcpStream, SocketAddr};
+use crate::config::{Config};
 
-/* This function should ideally take a Path parameter. The goal here is to
- * read new data that has been appended to the file and send it as a stream to
- * to the listening server socket
- *
- * To test this function, [TODO insert test instructions] 
- */
-pub fn create_log_stream(f: String) -> Result<()> {
-    /*
-    let tail_f = Command::new("tail").arg("-f").arg(f.to_string())
-        .output();
-    Ok(tail_f?)
-    */
+pub fn create_log_stream(config: Config) -> Result<()> {
+    println!("{:?}",config.log_file_path);
     if let Ok(mut child) = Command::new("tail")
         .arg("-f")
-        .arg(f.to_string())
+        .arg(config.log_file_path)
         .stdout(Stdio::piped())
         .spawn() {
             if let Some(stdout) = child.stdout.take() {
+                let addr = config.server_address.to_string() + 
+                        ":" + &config.server_port.to_string();
+                let mut stream = TcpStream::connect(&addr)
+                    .expect("failed to connect to server");
                 let reader = BufReader::new(stdout);
                 for line in reader.lines() {
                     match line {
                         Ok(text) => {
-                            //println!("captured line: {}", text);
-                            send_stream(text);                    
+                            send_stream(text, &stream);                    
                         }
                         Err(err) => {
                             eprintln!("error reading the log: {}", err);
@@ -43,23 +37,6 @@ pub fn create_log_stream(f: String) -> Result<()> {
         }
 }
 
-fn send_stream(s: String) {
-    //println!("{}", s.as_str());
-    // TODO
-    // remove hard coded IP address of the server. Intentionally put a code error here.
-    // this task should be done on next project session.
-    let mut stream = TcpStream::connect("44.228.113.79:44331"
-        .expect("failed to connect to server");
-    stream.write_all(s.as_str().as_bytes()).expect("failed to send log data");
+fn send_stream(data: String, mut stream: &TcpStream) {
+    stream.write_all(data.as_str().as_bytes()).expect("failed to send log data");
 }
-
-
-
-
-
-
-
-
-
-
-

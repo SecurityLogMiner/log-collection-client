@@ -2,10 +2,16 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 // https://doc.rust-lang.org/stable/book/ch19-06-macros.html
+// ISSUE: when a struct member is made pub, this macro needs to match
+// the changed datatype. Its a pita. Instead, or for now, just setup a
+// config default struct in the set_configuration function and initialize
+// values found in the config file.
+/*
 macro_rules! show_field_names {
-    (struct $name:ident { $($fname:ident : $ftype:ty),* }) => {
-        struct $name {
-            $($fname : $ftype),*
+    (pub struct $name:ident { $($fname:ident : $ftype:ty),* }) => {
+        #[derive(Debug)]
+        pub struct $name {
+            $(pub $fname : $ftype),*
         }
 
         impl $name {
@@ -18,24 +24,42 @@ macro_rules! show_field_names {
 }
 
 show_field_names!{
-struct Config {
-    server_address: String,
-    server_port: u16,
-    log_file_path: String,
-    field_values: Vec<String>,
-    credentials: String // TLS needed
+pub struct Config {
+    pub server_address: String,
+    pub server_port: u16,
+    pub log_file_path: String,
+    pub credentials: String // TLS needed
 }}
+*/
+
+#[derive(Debug)]
+pub struct Config {
+    pub server_address: String, // consider using Ipv4Addr::UNSPECIFIED
+    pub server_port: u16,
+    pub log_file_path: String,
+    pub credentials: String // TLS needed
+}
 
 pub fn
-read_config() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+read_config() -> Option<Config> {
     let mut fields: Vec<String> = Vec::new();
-    let file = File::open("test.config")?;
+    let file = File::open("test.config").ok()?;
     let reader = BufReader::new(file);
     let mut result;
     for line in reader.lines() {
-        result = line?.clone();
-        let config_field = result.split(" ").collect::<Vec<_>>();
-        let field1 = &check_config_file(config_field[0]);
+        result = line.ok()?;//.clone();
+        match &result.chars().next() {
+            Some(setting) => {
+                if setting != &'#' {
+                    fields.push(result.clone());
+                }
+            },
+            None => continue
+        }
+
+        //let config_field = result.split(" ").collect::<Vec<_>>();
+        //let _ = check_config_file(config_field);
+        /*
         match field1 {
             Some(val) => {
                 if config_field[0].to_string() !=  "#".to_string() &&
@@ -43,62 +67,30 @@ read_config() -> Result<Vec<String>, Box<dyn std::error::Error>> {
                         fields.push(config_field[1].to_string());
                 }
             },
-            None => {} 
+            None => () 
         }
+        */
     }
-    /*
-     * TODO read the config entries and establish connection with server*/
-    Ok(fields)
+    Some(set_configuration(fields))
 }
 
-/*
- * Check the configuration file for proper format
- * */
+// If a item in the configuration file is missing,
+// the default value will be set for the user.
 fn
-check_config_file(entry: &str) -> Option<&str> {
+set_configuration(list: Vec<String>) -> Config {
+    println!("{:?}",list);
+    let mut config = Config {
+        server_address: String::from("0.0.0.0"),
+        server_port: 44331,
+        log_file_path: String::from("./test.log"),
+        credentials: String::from("./creds.crt")
+    };
+    config
+    /*
     if entry != "#".to_string() {
         if Config::field_names().contains(&entry) == true && &entry.len() > &0 {
-            //println!("{:?} -- {:?} -- {}", Config::field_names().contains(&entry), &entry, &entry.len());
             return Some(&entry);
         }
     }
-    None
+    */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
