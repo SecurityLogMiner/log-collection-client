@@ -34,6 +34,7 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 fn 
 handle_log_data(log_channel: Receiver<String>) {
     for log_line in log_channel {
+        // call awss3::upload_object(log_line);
         println!("{}", log_line);
     }
 }
@@ -60,7 +61,6 @@ start_log_stream(config: Config) -> Result<()> {
         thread::spawn(move || handle_log_data(receiver));
     }
 
-    let _ = awss3::start_s3();
     // never return
     loop {}
     Ok(()) // known unreachable.
