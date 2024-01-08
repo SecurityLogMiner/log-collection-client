@@ -4,6 +4,7 @@ use std::thread;
 use std::sync::mpsc::{channel,Sender,Receiver};
 //use std::net::{TcpStream, SocketAddr};
 use crate::config::{Config};
+use aws_sdk_s3::{Client};
 use crate::awss3;
 
 fn 
@@ -34,11 +35,13 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 fn 
 handle_log_data(log_channel: Receiver<String>) {
     for log_line in log_channel {
-        // call awss3::upload_object(log_line);
+        // rethink how to provide client, bucket, and key to this call. 
+        //awss3::upload_object(&log_line, &client, "endepointe", "output.txt");
         println!("{}", log_line);
     }
 }
 
+// for now, pass in the client,bucket,and key for handle_log_data.
 pub fn 
 start_log_stream(config: Config) -> Result<()> {
 
@@ -56,10 +59,12 @@ start_log_stream(config: Config) -> Result<()> {
                 .expect("Failed to tail log file");
         });
     }
-
-    for (receiver, _input_log_file) in receivers.into_iter().zip(config.log_paths.clone()) {
-        thread::spawn(move || handle_log_data(receiver));
+    if let Some(client) = config.s3_client {
+        for (receiver, _input_log_file) in receivers.into_iter().zip(config.log_paths.clone()) {
+            thread::spawn(move || handle_log_data(receiver));
+        }       
     }
+
 
     // never return
     loop {}

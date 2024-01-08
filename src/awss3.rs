@@ -29,6 +29,7 @@ pub struct Opt {
 
 pub fn 
 upload_object(
+    data: &str,
     client: &Client,
     bucket: &str,
     key: &str,
