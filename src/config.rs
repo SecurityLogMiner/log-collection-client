@@ -1,11 +1,19 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use aws_sdk_s3::{Client};
 
+////begin of pita////
 // https://doc.rust-lang.org/stable/book/ch19-06-macros.html
+// ISSUE: when a struct member is made pub, this macro needs to match
+// the changed datatype. Its a pita. Instead, or for now, just setup a
+// config default struct in the set_configuration function and initialize
+// values found in the config file.
+/*
 macro_rules! show_field_names {
-    (struct $name:ident { $($fname:ident : $ftype:ty),* }) => {
-        struct $name {
-            $($fname : $ftype),*
+    (pub struct $name:ident { $($fname:ident : $ftype:ty),* }) => {
+        #[derive(Debug)]
+        pub struct $name {
+            $(pub $fname : $ftype),*
         }
 
         impl $name {
@@ -16,106 +24,88 @@ macro_rules! show_field_names {
         }
     }
 }
-
 show_field_names!{
-struct Config {
-    server_address: String,
-    server_port: u16,
-    log_file_path: String,
-    field_values: Vec<String>,
-    credentials: String // TLS needed
+pub struct Config {
+    pub server_address: String,
+    pub server_port: u16,
+    pub log_file_path: String,
+    pub credentials: String // TLS needed
 }}
+*/
+////end of pita////
+
+
+#[derive(Debug)]
+pub struct Config {
+    pub server_address: String, // consider using Ipv4Addr::UNSPECIFIED
+    pub server_port: String,
+    pub log_paths: Vec<String>,
+    pub s3_client: Option<Client>,
+    pub credentials: String // TLS needed
+}
 
 pub fn
-read_config() -> Result<u8, Box<dyn std::error::Error>> {
-    let file = File::open("test.config")?;
+read_config(client: Client) -> Option<Config> {
+    let mut fields: Vec<String> = Vec::new();
+    let file = File::open("test.config").ok()?;
     let reader = BufReader::new(file);
     let mut result;
     for line in reader.lines() {
-        result = line?.clone();
-        let config_field = result.split(" ").collect::<Vec<_>>();
-        println!("config_field: {:?}", config_field);
-        let field1 = &check_config_file(config_field[0]);
-        match field1 {
-            Some(val) => println!("config member: {:?}, file data: {:?}",
-                                  val,
-                                  config_field[0].to_string() == val.to_string()),
-            None => {} 
+        result = line.ok()?;//.clone();
+        match &result.chars().next() {
+            Some(setting) => {
+                if setting != &'#' {
+                    fields.push(result.clone());
+                }
+            },
+            None => continue
         }
     }
-    /*
-     * TODO read the config entries and establish connection with server*/
-    Ok(0)
+    Some(set_configuration(fields,client))
 }
 
-/*
- * Check the configuration file for proper format
- * */
+// If a item in the configuration file is missing,
+// return a default config and let it error out later.
+// TODO: handle the error
 fn
-check_config_file(entry: &str) -> Option<&str> {
-    if entry != "#".to_string() {
-        if Config::field_names().contains(&entry) == true && &entry.len() > &0 {
-            //println!("{:?} -- {:?} -- {}", Config::field_names().contains(&entry), &entry, &entry.len());
-            return Some(&entry);
+set_configuration(list: Vec<String>, client: Client) -> Config {
+    // maybe convert these to &str later on.
+    let mut config = Config {
+        server_address: String::from(""),
+        server_port: String::from(""),
+        log_paths: Vec::new(),
+        credentials: String::from(""),
+        s3_client: Some(client),
+    };
+
+    // TODO: clean this up somehow. just make it work for now.
+    // The current solution could be to manually check for each
+    // config setting, whether its length is 0, etc. 
+    // Tried handling this with the macro above (see pita) but...
+    // ... it was a pita.
+    for item in list {
+        let setting = item.split(" ").collect::<Vec<_>>();
+        match setting[0] {
+            "server_address" => config.server_address = setting[1].to_string(),
+            "server_port" => config.server_port = setting[1].to_string(),
+            "log_paths" => {
+                let mut logs = item.split(' ').collect::<Vec<_>>();
+                let mut paths = Vec::new();
+                if !logs.is_empty() {
+                    logs.remove(0); // remove the setting name
+                }
+                for log in logs {
+                    println!("log to read: {:?}",log);
+                    paths.push(log.to_string());
+                }
+                config.log_paths = paths.clone();
+                drop(paths);
+            }
+
+            "credentials" => config.credentials = setting[1].to_string(),
+            _ => continue
         }
-    }
-    None
+    }   
+    //println!("config: {:?}",config);// long printout with s3_client
+    config
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// UNUSED Section
-/*
-#[derive(Parser,Debug)]
-struct Args {
-    config: String,
-}
-// the user could provide a path to a different config or simply get help with using the command
-pub fn 
-command_line() -> Result<Config, Box<dyn std::error::Error>>{
-    let args = Args::try_parse();
-    println!("{:?}",args);
-    Ok(Config {
-        server_address: String::from("server address"),
-        server_port: 123,
-        log_file_path: String::from("path to log file"),
-        field_values: vec!["test".to_string(), "field".to_string(), "values".to_string()],
-        credentials: String::from("credentials"),
-    })
-}
-*/
-
