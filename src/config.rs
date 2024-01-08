@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+////begin of pita////
 // https://doc.rust-lang.org/stable/book/ch19-06-macros.html
 // ISSUE: when a struct member is made pub, this macro needs to match
 // the changed datatype. Its a pita. Instead, or for now, just setup a
@@ -22,7 +23,6 @@ macro_rules! show_field_names {
         }
     }
 }
-
 show_field_names!{
 pub struct Config {
     pub server_address: String,
@@ -31,12 +31,14 @@ pub struct Config {
     pub credentials: String // TLS needed
 }}
 */
+////end of pita////
+
 
 #[derive(Debug)]
 pub struct Config {
     pub server_address: String, // consider using Ipv4Addr::UNSPECIFIED
-    pub server_port: u16,
-    pub log_file_path: String,
+    pub server_port: String,
+    pub log_paths: Vec<String>,
     pub credentials: String // TLS needed
 }
 
@@ -56,41 +58,52 @@ read_config() -> Option<Config> {
             },
             None => continue
         }
-
-        //let config_field = result.split(" ").collect::<Vec<_>>();
-        //let _ = check_config_file(config_field);
-        /*
-        match field1 {
-            Some(val) => {
-                if config_field[0].to_string() !=  "#".to_string() &&
-                    config_field[0].to_string() == "log_file_path".to_string() {
-                        fields.push(config_field[1].to_string());
-                }
-            },
-            None => () 
-        }
-        */
     }
     Some(set_configuration(fields))
 }
 
 // If a item in the configuration file is missing,
-// the default value will be set for the user.
+// return a default config and let it error out later.
+// TODO: handle the error
 fn
 set_configuration(list: Vec<String>) -> Config {
-    println!("{:?}",list);
+
+    // maybe convert these to &str later on.
     let mut config = Config {
-        server_address: String::from("0.0.0.0"),
-        server_port: 44331,
-        log_file_path: String::from("./test.log"),
-        credentials: String::from("./creds.crt")
+        server_address: String::from(""),
+        server_port: String::from(""),
+        log_paths: Vec::new(),
+        credentials: String::from("")
     };
-    config
-    /*
-    if entry != "#".to_string() {
-        if Config::field_names().contains(&entry) == true && &entry.len() > &0 {
-            return Some(&entry);
+
+    // TODO: clean this up somehow. just make it work for now.
+    // The current solution could be to manually check for each
+    // config setting, whether its length is 0, etc. 
+    // Tried handling this with the macro above (see pita) but...
+    // ... it was a pita.
+    for item in list {
+        let setting = item.split(" ").collect::<Vec<_>>();
+        match setting[0] {
+            "server_address" => config.server_address = setting[1].to_string(),
+            "server_port" => config.server_port = setting[1].to_string(),
+            "log_paths" => {
+                let mut logs = item.split(' ').collect::<Vec<_>>();
+                let mut paths = Vec::new();
+                if !logs.is_empty() {
+                    logs.remove(0); // remove the setting name
+                }
+                for log in logs {
+                    println!("log to read: {:?}",log);
+                    paths.push(log.to_string());
+                }
+                config.log_paths = paths.clone();
+                drop(paths);
+            }
+
+            "credentials" => config.credentials = setting[1].to_string(),
+            _ => continue
         }
-    }
-    */
+    }   
+    println!("config: {:?}",config);
+    config
 }

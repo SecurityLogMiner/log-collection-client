@@ -1,42 +1,67 @@
-// Read from a file and detect when new data is appended to that file
 use std::process::{Command, Stdio};
-use std::io::{BufReader, BufRead, Result, Write};
-use std::net::{TcpStream, SocketAddr};
+use std::io::{BufReader, BufRead, Result};
+use std::thread;
+use std::sync::mpsc::{channel,Sender,Receiver};
+//use std::net::{TcpStream, SocketAddr};
 use crate::config::{Config};
+use crate::awss3;
 
-pub fn create_log_stream(config: Config) -> Result<()> {
-    println!("{:?}",config.log_file_path);
-    if let Ok(mut child) = Command::new("tail")
-        .arg("-f")
-        .arg(config.log_file_path)
+fn 
+tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
+    let mut tail_process = Command::new("tail")
+        .args(["-f","-n0","-q", &path])
         .stdout(Stdio::piped())
-        .spawn() {
-            if let Some(stdout) = child.stdout.take() {
-                let addr = config.server_address.to_string() + 
-                        ":" + &config.server_port.to_string();
-                let mut stream = TcpStream::connect(&addr)
-                    .expect("failed to connect to server");
-                let reader = BufReader::new(stdout);
-                for line in reader.lines() {
-                    match line {
-                        Ok(text) => {
-                            send_stream(text, &stream);                    
-                        }
-                        Err(err) => {
-                            eprintln!("error reading the log: {}", err);
-                            break;
-                        }
-                    }
-                }
+        .spawn()?;
+
+    let stdout = tail_process.stdout.take().expect("Failed to open stdout");
+
+    thread::spawn(move || {
+        let reader = BufReader::new(stdout);
+        for line in reader.lines() {
+            if let Ok(line) = line {
+                sender.send(line).expect("Failed to send data");
             }
-            let _ = child.wait();
-            Ok(())
-        } else {
-            Err(std::io::Error::new(std::io::ErrorKind::Other,
-                                    "Error creating log stream"))
         }
+    });
+
+    Ok(())
 }
 
-fn send_stream(data: String, mut stream: &TcpStream) {
-    stream.write_all(data.as_str().as_bytes()).expect("failed to send log data");
+
+// TODO: This function should take a channel and a sink.
+// The sink is the destination for the log data. For now, it just prints to 
+// stdout.
+fn 
+handle_log_data(log_channel: Receiver<String>) {
+    for log_line in log_channel {
+        println!("{}", log_line);
+    }
+}
+
+pub fn 
+start_log_stream(config: Config) -> Result<()> {
+
+    let mut senders = Vec::new();
+    let mut receivers = Vec::new();
+
+    for input_log_file in config.log_paths.clone().into_iter() {
+        let (sender, receiver) = channel();
+        senders.push(sender);
+        receivers.push(receiver);
+
+        let sender_clone = senders.last().unwrap().clone();
+        thread::spawn(move || {
+            tail_and_send_log(&input_log_file, sender_clone)
+                .expect("Failed to tail log file");
+        });
+    }
+
+    for (receiver, _input_log_file) in receivers.into_iter().zip(config.log_paths.clone()) {
+        thread::spawn(move || handle_log_data(receiver));
+    }
+
+    let _ = awss3::start_s3();
+    // never return
+    loop {}
+    Ok(()) // known unreachable.
 }

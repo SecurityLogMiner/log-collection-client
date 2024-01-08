@@ -31,6 +31,9 @@ commit.sh
 # test config file
 test.config
 
+# test logs
+*.log
+
 # cert info
 ca.crt
 ca.key
