@@ -25,9 +25,12 @@ struct Opt {
 
 // still need this to create the event and send to sink. The sink is the s3 bucket
 // see producer:handle_log_data
-fn 
+#[tokio::main]
+async fn 
 main() {
 
+    // these should be optional. for now, hard code them and test
+    /*
     let Opt {
         bucket,
         key,
@@ -43,12 +46,11 @@ main() {
         println!("Log Data Key:               {}", &key);
         println!();
     }
+    */
 
-    let config_data;
-
-    if let Ok(client) = start_s3() {
+    if let Ok(client) = start_s3().await {
         // pass client into configuration 
-        config_data = read_config(client);
+        let config_data = read_config(client);
         match config_data {
             Some(config) => {
                 let _ = start_log_stream(config);
@@ -56,6 +58,4 @@ main() {
             None => panic!("error reading configuration. fix it.")
         }
     }
-
-
 }
