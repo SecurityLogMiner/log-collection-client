@@ -47,10 +47,11 @@ main() {
         println!();
     }
     */
+    //let result = start_s3();
 
-    if let Ok(client) = start_s3().await {
+    if let Ok(_client) = start_s3().await {
         // pass client into configuration 
-        let config_data = read_config(client);
+        let config_data = read_config();
         match config_data {
             Some(config) => {
                 let _ = start_log_stream(config);
