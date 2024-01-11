@@ -31,14 +31,14 @@ pub struct Opt {
 
 pub async fn 
 upload_object(
-    client: &Client,
-    bucket: &str,
     data: &str,
+    client: Client,
+    //bucket: &str,
 ) -> Result<(), Error> {
     // this needs to append to the existing log data object, not overwrite it.
     //let body = ByteStream::from_static(data.as_bytes());
-    //println!("body: {body:?}");
-    let resp = client
+    println!("data: {data:?}");
+    let resp = &client
         .put_object()
         .bucket("logcollectionbucket")
         .key(data)
@@ -69,16 +69,14 @@ start_s3() -> Result<Client, Error> {
     let shared_config = aws_config::from_env().region(region_provider).load().await;
     let client = Client::new(&shared_config); 
 
-    ///*
-    // Test upload event object
-    let bucket = String::from("logcollectionbucket");
-    let data = String::from("another test before stopping");
-    let result = upload_object(&client,&bucket,&data).await;
-    match result {
-        Ok(val) => println!("{val:?}"),
-        Err(err) => eprintln!("{err:?}"),
-    }
-    //*/
+    //// Test upload event object
+    //let bucket = String::from("logcollectionbucket");
+    //let data = String::from("another test before stopping");
+    //let result = upload_object(&client,&bucket,&data).await;
+    //match result {
+    //    Ok(val) => println!("{val:?}"),
+    //    Err(err) => eprintln!("{err:?}"),
+    //}
 
     Ok(client)
 }

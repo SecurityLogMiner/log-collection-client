@@ -32,11 +32,12 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 // TODO: This function should take a channel and a sink.
 // The sink is the destination for the log data. For now, it just prints to 
 // stdout.
-fn 
-handle_log_data(log_channel: Receiver<String>) {
+async fn 
+handle_log_data(log_channel: Receiver<String>, client: &Client) {
+    println!("client called");
     for log_line in log_channel {
         // rethink how to provide client, bucket, and key to this call. 
-        //awss3::upload_object(log_line);//, &client, "endepointe", "output.txt");
+        awss3::upload_object(&log_line, client.clone());
         println!("{}", log_line);
     }
 }
@@ -59,16 +60,20 @@ start_log_stream(config: Config) -> Result<()> {
                 .expect("Failed to tail log file");
         });
     }
-    /*
+
     if let Some(client) = config.s3_client {
-
+        //println!("{client:?}");
+        for (receiver, _input_log_file) in receivers.into_iter()
+                .zip(config.log_paths.clone()) {
+            let client_clone = client.clone().into();
+            thread::spawn(move || handle_log_data(receiver, &client_clone));
+        }    
     }
-    */
-    for (receiver, _input_log_file) in receivers.into_iter()
-            .zip(config.log_paths.clone()) {
-        thread::spawn(move || handle_log_data(receiver));
-
-    }       
+    
+   // for (receiver, _input_log_file) in receivers.into_iter()
+   //         .zip(config.log_paths.clone()) {
+   //     thread::spawn(move || handle_log_data(receiver));
+   // }       
 
 
     // never return
