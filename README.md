@@ -41,3 +41,6 @@ https://docs.aws.amazon.com/sdk-for-rust/latest/dg/using.html
 https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
 https://github.com/awslabs/aws-sdk-rust/tree/main/examples/examples/s3
 https://docs.rs/aws-sdk-s3/latest/aws_sdk_s3/index.html
+
+
+https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
