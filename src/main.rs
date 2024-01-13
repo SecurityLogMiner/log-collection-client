@@ -54,7 +54,7 @@ main() {
         let config_data = read_config(&client);
         match config_data {
             Some(config) => {
-                let _ = start_log_stream(config);
+                let _ = start_log_stream(config).await;
             }
             None => panic!("error reading configuration. fix it.")
         }
