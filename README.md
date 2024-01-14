@@ -44,3 +44,5 @@ https://docs.rs/aws-sdk-s3/latest/aws_sdk_s3/index.html
 
 
 https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
+
+https://aws.amazon.com/kinesis/data-streams/pricing/
