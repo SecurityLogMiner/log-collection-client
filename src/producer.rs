@@ -7,6 +7,7 @@ use crate::config::{Config};
 use crate::awssdk;
 use aws_sdk_kinesis::{Client};
 
+
 fn 
 tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
     let mut tail_process = Command::new("tail")
@@ -32,10 +33,11 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 
 async fn 
 handle_log_data(log_channel: Receiver<String>, client: Client) {
+    // can retrieve a thread name from the REceiever
     println!("client called");
     for log_line in log_channel {
         println!("{}", log_line);
-        awssdk::add_record(&client,"ep-log-stream","datakey",&log_line).await;
+        awssdk::add_record(&client,"the things","datakey",&log_line).await;
     }
 }
 
@@ -72,9 +74,14 @@ start_log_stream(config: Config) -> Result<()> {
                 handle_log_data(receiver,client).await;
             });
         });
-       
     }
+
     // never return
     loop {}
     Ok(()) // known unreachable.
+}
+
+#[test]
+fn test_the_thing() {
+    assert_eq!(1,1);
 }
