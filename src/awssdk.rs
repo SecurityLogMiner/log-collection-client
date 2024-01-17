@@ -1,7 +1,6 @@
 use aws_sdk_kinesis::primitives::Blob;
 use aws_sdk_kinesis::{config::Region, meta::PKG_VERSION, Client, Error};
 use aws_sdk_kinesis::operation::list_streams;
-// aws_sdk_elastic::
 
 pub async fn
 start_elastic() -> Result<(), Error> {
@@ -49,4 +48,3 @@ add_record(client: &Client, stream: &str, key: &str, data: &str
 
     Ok(())
 }
-
