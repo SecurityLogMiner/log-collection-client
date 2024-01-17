@@ -1,10 +1,19 @@
+<a name="readme-top"></a>
+
 # Log Collection Client 
 
 A service that collects and sends system event data to a server.
 
+  <p align="left">
+    A service that collects and sends system event data to a server.
+    <br />
+    <a href="https://securitylogminer-doc-repo.readthedocs.io/"><strong>Documentation »</strong></a>
+    <br />
+  
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Resources](#resources)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 - [Contact](#contact)
@@ -38,7 +47,24 @@ be created at:
 - /var/log/logminer/logs/
 
 If you do not have a system service that you are able to read log data from, you
-can create one with the install script.
+
+can create one with a combination of a shell script and cronjob:
+
+script.sh:
+```
+#!/bin/bash
+for ((i = 1; i <= 60; i++)); do
+    echo "test $(date)" >> /var/log/logminer/logs/test.log
+    sleep 1
+done
+echo "" > /var/log/logminer/logs/test.log
+```
+
+cronjob:
+```
+* * * * * <path_to_your_script>
+0 * * * * echo "" > /var/log/logminer/logs/test.log
+```
 
 install.sh:
 ```
@@ -76,6 +102,16 @@ cargo install
 cargo run
 ```
 
+## Resources
+- [SDK for Rust](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/using.html)
+- [Amazon Simple Storage Service](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+- [AWS SDK and S3 Rust Documentation](https://docs.rs/aws-sdk-s3/latest/aws_sdk_s3/index.html)
+- [Rust AWS SDK Examples](https://github.com/awslabs/aws-sdk-rust/tree/main/examples/examples/s3)
+- [Amazon Dynamodb Docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.html)
+- [Amazon Dynamodb Examples](https://github.com/awsdocs/aws-doc-sdk-examples/tree/main/rustv1/examples/dynamodb#code-examples)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## License
 Apache 2.0
 
@@ -83,14 +119,3 @@ Apache 2.0
 
 ## Contact
 
-[Back to top](#table-of-contents)
-
-https://docs.aws.amazon.com/sdk-for-rust/latest/dg/using.html
-https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
-https://github.com/awslabs/aws-sdk-rust/tree/main/examples/examples/s3
-https://docs.rs/aws-sdk-s3/latest/aws_sdk_s3/index.html
-
-
-https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
-
-https://aws.amazon.com/kinesis/data-streams/pricing/
