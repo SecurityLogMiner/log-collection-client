@@ -9,7 +9,7 @@ A service that collects and sends system event data to a server.
     <br />
     <a href="https://securitylogminer-doc-repo.readthedocs.io/"><strong>Documentation »</strong></a>
     <br />
-
+  
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -47,6 +47,7 @@ be created at:
 - /var/log/logminer/logs/
 
 If you do not have a system service that you are able to read log data from, you
+
 can create one with a combination of a shell script and cronjob:
 
 script.sh:
@@ -94,7 +95,6 @@ Enter the command "aws config" to configure these credentials as well as the out
 
 The client will look for these credentials when executed.
 
-
 Running the Client:
 ```
 cd <client_repo_dir>
@@ -119,4 +119,3 @@ Apache 2.0
 
 ## Contact
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>

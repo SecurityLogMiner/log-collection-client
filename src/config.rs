@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use aws_sdk_s3::{Client};
+use aws_sdk_kinesis::Client;
 
 ////begin of pita////
 // https://doc.rust-lang.org/stable/book/ch19-06-macros.html
@@ -40,12 +40,11 @@ pub struct Config {
     pub server_address: String, // consider using Ipv4Addr::UNSPECIFIED
     pub server_port: String,
     pub log_paths: Vec<String>,
-    pub s3_client: Option<Client>,
     pub credentials: String // TLS needed
 }
 
 pub fn
-read_config(client: Client) -> Option<Config> {
+read_config() -> Option<Config> {
     let mut fields: Vec<String> = Vec::new();
     let file = File::open("test.config").ok()?;
     let reader = BufReader::new(file);
@@ -61,21 +60,20 @@ read_config(client: Client) -> Option<Config> {
             None => continue
         }
     }
-    Some(set_configuration(fields,client))
+    Some(set_configuration(fields))
 }
 
 // If a item in the configuration file is missing,
 // return a default config and let it error out later.
 // TODO: handle the error
 fn
-set_configuration(list: Vec<String>, client: Client) -> Config {
+set_configuration(list: Vec<String>) -> Config {
     // maybe convert these to &str later on.
     let mut config = Config {
         server_address: String::from(""),
         server_port: String::from(""),
         log_paths: Vec::new(),
         credentials: String::from(""),
-        s3_client: Some(client),
     };
 
     // TODO: clean this up somehow. just make it work for now.
@@ -106,6 +104,5 @@ set_configuration(list: Vec<String>, client: Client) -> Config {
             _ => continue
         }
     }   
-    //println!("config: {:?}",config);// long printout with s3_client
     config
 }
