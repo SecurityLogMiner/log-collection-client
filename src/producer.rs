@@ -1,5 +1,6 @@
 use std::process::{Command, Stdio};
 use std::fs::File;
+use std::iter::zip;
 use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
 use std::sync::mpsc::{channel,Sender,Receiver};
@@ -22,11 +23,9 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
         for line in reader.lines() {
             if let Ok(line) = line {
                 sender.send(line).expect("Failed to send data");
-
             }
         }
     });
-
     Ok(())
 }
 
@@ -37,7 +36,7 @@ pub fn create_data_buffer() -> Result<File> {
 }
 
 
-pub fn insert_into_buffer(mut bf: File,) -> Result<()> {
+pub fn insert_into_buffer(mut bf: File, data: &str) -> Result<()> {
     bf.write_all(b"some data should be in amihere.txt")?;
     Ok(())
 }
@@ -45,7 +44,6 @@ pub fn insert_into_buffer(mut bf: File,) -> Result<()> {
 pub fn send_data_buffer() {
     todo!();
 }
-
 
 async fn 
 handle_log_data(log_channel: Receiver<String>, client_buffer: Client) {
@@ -64,6 +62,17 @@ start_log_stream(config: Config) -> Result<()> {
     let mut receivers = Vec::new();
     let mut buffers = Vec::<File>::new();
     let mut clients = Vec::<Client>::new();
+
+    let mut a = Vec::<u32>::new();
+    let mut b = Vec::<u32>::new();
+    for i in 1..10 {
+        a.push(i);
+        b.push(i+10);
+    }
+
+    let mut z = zip(a,b);
+    println!("{:?}", z.next().unwrap());
+
     for input_log_file in config.log_paths.clone().into_iter() {
         // replace this with start_firehose().await. 
         if let Ok(client) = awssdk::start_kinesis().await {
