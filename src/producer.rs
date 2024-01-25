@@ -2,7 +2,6 @@ use std::process::{Command, Stdio};
 use std::fs::File;
 use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
-use std::sync::Arc;
 use std::sync::mpsc::{channel,Sender,Receiver};
 use uuid::Uuid;
 use crate::config::{Config};
@@ -49,9 +48,10 @@ pub fn send_data_buffer() {
 
 
 async fn 
-handle_log_data(log_channel: Receiver<String>, client: Client) {
+handle_log_data(log_channel: Receiver<String>, client_buffer: Client) {
     println!("client called");
     println!("{:?}",log_channel);
+    //println!("{:?}",bf);
     for log_line in log_channel {
         println!("{}", log_line);
     }
@@ -64,12 +64,14 @@ start_log_stream(config: Config) -> Result<()> {
     let mut receivers = Vec::new();
     let mut buffers = Vec::<File>::new();
     let mut clients = Vec::<Client>::new();
-    let client = awssdk::start_kinesis().await; 
     for input_log_file in config.log_paths.clone().into_iter() {
         // replace this with start_firehose().await. 
-        // error added intentionally
-        if let O/k(client) = awssdk::start_kinesis().await {
+        if let Ok(client) = awssdk::start_kinesis().await {
             clients.push(client);
+        }
+
+        if let Ok(bf) = create_data_buffer() {
+            buffers.push(bf);
         }
 
         let (sender, receiver) = channel();
@@ -78,7 +80,6 @@ start_log_stream(config: Config) -> Result<()> {
          
         let sender_clone = senders.last().unwrap().clone();
         thread::spawn(move || {
-            // might need Arc for client
             tail_and_send_log(&input_log_file, sender_clone)
                 .expect("Failed to tail log file");
         });
@@ -91,7 +92,9 @@ start_log_stream(config: Config) -> Result<()> {
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
-                    handle_log_data(receiver,client).await;
+                    // the file buffer needs to gt passed into this as well
+                    // todo!
+                    handle_log_data(receiver, client).await;
                 });
         });
     }
