@@ -1,8 +1,10 @@
 use std::process::{Command, Stdio};
-use std::io::{BufReader, BufRead, Result};
+use std::fs::File;
+use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
 use std::sync::Arc;
 use std::sync::mpsc::{channel,Sender,Receiver};
+use uuid::Uuid;
 use crate::config::{Config};
 use crate::awssdk;
 use aws_sdk_kinesis::{Client};
@@ -29,13 +31,29 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
     Ok(())
 }
 
+pub fn create_data_buffer() -> Result<File> {
+    let uuid = Uuid::new_v4();
+    let mut bf = File::create(uuid.to_string())?;
+    Ok(bf)
+}
+
+
+pub fn insert_into_buffer(mut bf: File,) -> Result<()> {
+    bf.write_all(b"some data should be in amihere.txt")?;
+    Ok(())
+}
+
+pub fn send_data_buffer() {
+    todo!();
+}
+
 
 async fn 
 handle_log_data(log_channel: Receiver<String>, client: Client) {
     println!("client called");
+    println!("{:?}",log_channel);
     for log_line in log_channel {
         println!("{}", log_line);
-        awssdk::add_record(&client,"ep-log-stream","datakey",&log_line).await;
     }
 }
 
@@ -44,12 +62,16 @@ start_log_stream(config: Config) -> Result<()> {
 
     let mut senders = Vec::new();
     let mut receivers = Vec::new();
+    let mut buffers = Vec::<File>::new();
     let mut clients = Vec::<Client>::new();
-
+    let client = awssdk::start_kinesis().await; 
     for input_log_file in config.log_paths.clone().into_iter() {
-        if let Ok(client) = awssdk::start_kinesis().await {
+        // replace this with start_firehose().await. 
+        // error added intentionally
+        if let O/k(client) = awssdk::start_kinesis().await {
             clients.push(client);
         }
+
         let (sender, receiver) = channel();
         senders.push(sender);
         receivers.push(receiver);
@@ -69,8 +91,8 @@ start_log_stream(config: Config) -> Result<()> {
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
-                handle_log_data(receiver,client).await;
-            });
+                    handle_log_data(receiver,client).await;
+                });
         });
     }
     // never return

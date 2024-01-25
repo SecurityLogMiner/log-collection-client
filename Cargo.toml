@@ -8,3 +8,11 @@ aws-config = { version= "1.1.1", features = ["behavior-version-latest"] }
 tokio = { version = "1", features = ["full"] }
 aws-sdk-firehose = "1.10.0"
 aws-sdk-kinesis = "1.10.0"
+
+[dependencies.uuid]
+version = "1.7.0"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+]
