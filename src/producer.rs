@@ -60,7 +60,8 @@ pub fn send_data_buffer() {
 }
 
 async fn 
-handle_log_data(log_channel: Receiver<String>, client: Client) {
+handle_log_data(log_channel: Receiver<String>, client: Client, buffer: DataBuffer) {
+    println!("{:?}",buffer);
     for log_line in log_channel {
         println!("{}", log_line);
     }
@@ -105,13 +106,12 @@ start_log_stream(config: Config) -> Result<()> {
     let iter = zip(receivers.into_iter(), zip(clients,buffers.clone()));
     for (receiver, client_buffer) in iter {
         let (client, buffer) = client_buffer;
-        println!("{:?}",buffer);
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
                     // the file buffer needs to gt passed into this as well
                     // todo!
-                    handle_log_data(receiver, client).await;
+                    handle_log_data(receiver, client, buffer).await;
                 });
         });
     }
