@@ -1,4 +1,5 @@
 use std::process::{Command, Stdio};
+use tokio::time;
 use ctrlc;
 use std::fs::{File,OpenOptions};
 use std::iter::zip;
@@ -58,7 +59,10 @@ pub fn insert_into_buffer(mut bf: File, data: &str) -> Result<()> {
 pub fn send_data_buffer() {
     todo!();
 }
-
+async fn async_function() -> String {
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    String::from("send buffer as batch to dest")
+}
 async fn 
 handle_log_data(log_channel: Receiver<String>, 
                 client: Client, buffer: DataBuffer) {
@@ -73,7 +77,7 @@ handle_log_data(log_channel: Receiver<String>,
         written += std::fs::metadata(buffer.name.to_string())
                  .expect("no file metadata").len();
         if written > 1000 {
-            println!("batch send to dest");
+            println!("{}",async_function().await);
         }
         println!("{:?}",std::fs::metadata(buffer.name.to_string())
                  .expect("no file metadata").len());
