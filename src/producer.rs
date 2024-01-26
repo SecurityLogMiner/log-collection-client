@@ -10,9 +10,8 @@ use crate::config::{Config};
 use crate::awssdk;
 use aws_sdk_kinesis::{Client};
 
-#[derive(Debug)]
-struct DataBuffer {
-    file: File,
+#[derive(Debug, Clone)]
+pub struct DataBuffer {
     name: String,
 }
 
@@ -38,8 +37,8 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 
 pub fn create_data_buffer() -> Result<DataBuffer> {
     let uuid = Uuid::new_v4();
+    let _ = File::create(uuid.to_string())?;
     let mut bf = DataBuffer {
-        file: File::create(uuid.to_string())?,
         name: uuid.to_string(),
     };
     Ok(bf)
@@ -61,10 +60,7 @@ pub fn send_data_buffer() {
 }
 
 async fn 
-handle_log_data(log_channel: Receiver<String>, client_buffer: Client) {
-    println!("client called");
-    println!("{:?}",log_channel);
-    //println!("{:?}",bf);
+handle_log_data(log_channel: Receiver<String>, client: Client) {
     for log_line in log_channel {
         println!("{}", log_line);
     }
@@ -83,18 +79,6 @@ start_log_stream(config: Config) -> Result<()> {
     let mut buffers = Vec::<DataBuffer>::new();
     let mut clients = Vec::<Client>::new();
 
-    let mut a = Vec::<u32>::new();
-    let mut b = Vec::<u32>::new();
-    for i in 1..10 {
-        a.push(i);
-        b.push(i+10);
-    }
-
-    let mut z = zip(a,b);
-    for i in z {
-        println!("{:?}", i);
-    }
-
     for input_log_file in config.log_paths.clone().into_iter() {
         // replace this with start_firehose().await. 
         if let Ok(client) = awssdk::start_kinesis().await {
@@ -102,11 +86,9 @@ start_log_stream(config: Config) -> Result<()> {
         }
 
         if let Ok(bf) = create_data_buffer() {
+            println!("Creating data buffer {}", bf.name);
             buffers.push(bf);
         }
-
-        println!("{:?}",buffers);
-
 
         let (sender, receiver) = channel();
         senders.push(sender);
@@ -120,9 +102,10 @@ start_log_stream(config: Config) -> Result<()> {
     }
 
     let mut count: u8 = 0;
-    for (receiver, client) in receivers.into_iter().zip(clients) {
-        count += 1;
-        println!("called {count} time(s)");
+    let iter = zip(receivers.into_iter(), zip(clients,buffers.clone()));
+    for (receiver, client_buffer) in iter {
+        let (client, buffer) = client_buffer;
+        println!("{:?}",buffer);
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
@@ -132,12 +115,14 @@ start_log_stream(config: Config) -> Result<()> {
                 });
         });
     }
+
     rx.recv().expect("unable to receive from channel");
     for buf in buffers {
-        println!("{:?}",buf);
+        println!("Deleting {}",buf.name);
         destroy_data_buffer(buf.name);
     }
-    Ok(()) // known unreachable.
+
+    Ok(())
 }
 
 #[test]
