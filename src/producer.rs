@@ -1,6 +1,6 @@
 use std::process::{Command, Stdio};
 use ctrlc;
-use std::fs::{File};
+use std::fs::{File,OpenOptions};
 use std::iter::zip;
 use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
@@ -60,10 +60,23 @@ pub fn send_data_buffer() {
 }
 
 async fn 
-handle_log_data(log_channel: Receiver<String>, client: Client, buffer: DataBuffer) {
-    println!("{:?}",buffer);
+handle_log_data(log_channel: Receiver<String>, 
+                client: Client, buffer: DataBuffer) {
+    let mut buf = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(buffer.name.to_string()).expect("issue");
+    let mut written = 0;
     for log_line in log_channel {
-        println!("{}", log_line);
+ 
+        buf.write_all(log_line.as_bytes());
+        written += std::fs::metadata(buffer.name.to_string())
+                 .expect("no file metadata").len();
+        if written > 1000 {
+            println!("batch send to dest");
+        }
+        println!("{:?}",std::fs::metadata(buffer.name.to_string())
+                 .expect("no file metadata").len());
     }
 }
 
@@ -119,7 +132,7 @@ start_log_stream(config: Config) -> Result<()> {
     rx.recv().expect("unable to receive from channel");
     for buf in buffers {
         println!("Deleting {}",buf.name);
-        destroy_data_buffer(buf.name);
+        let _ = destroy_data_buffer(buf.name);
     }
 
     Ok(())
