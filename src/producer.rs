@@ -1,5 +1,6 @@
 use std::process::{Command, Stdio};
-use std::fs::File;
+use ctrlc;
+use std::fs::{File};
 use std::iter::zip;
 use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
@@ -8,6 +9,12 @@ use uuid::Uuid;
 use crate::config::{Config};
 use crate::awssdk;
 use aws_sdk_kinesis::{Client};
+
+#[derive(Debug)]
+struct DataBuffer {
+    file: File,
+    name: String,
+}
 
 fn 
 tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
@@ -29,10 +36,18 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn create_data_buffer() -> Result<File> {
+pub fn create_data_buffer() -> Result<DataBuffer> {
     let uuid = Uuid::new_v4();
-    let mut bf = File::create(uuid.to_string())?;
+    let mut bf = DataBuffer {
+        file: File::create(uuid.to_string())?,
+        name: uuid.to_string(),
+    };
     Ok(bf)
+}
+
+pub fn destroy_data_buffer(name: String) -> Result<()> {
+    std::fs::remove_file(name)?;
+    Ok(())
 }
 
 
@@ -57,10 +72,15 @@ handle_log_data(log_channel: Receiver<String>, client_buffer: Client) {
 
 pub async fn 
 start_log_stream(config: Config) -> Result<()> {
+    let (tx,rx) = channel();
+    ctrlc::set_handler(move || {
+        println!("handle ctrlc signal");
+        tx.send(()).expect("unable to send termination signal");
+    }).expect("issue with ctrlc signal handling");
 
     let mut senders = Vec::new();
     let mut receivers = Vec::new();
-    let mut buffers = Vec::<File>::new();
+    let mut buffers = Vec::<DataBuffer>::new();
     let mut clients = Vec::<Client>::new();
 
     let mut a = Vec::<u32>::new();
@@ -71,7 +91,9 @@ start_log_stream(config: Config) -> Result<()> {
     }
 
     let mut z = zip(a,b);
-    println!("{:?}", z.next().unwrap());
+    for i in z {
+        println!("{:?}", i);
+    }
 
     for input_log_file in config.log_paths.clone().into_iter() {
         // replace this with start_firehose().await. 
@@ -82,6 +104,9 @@ start_log_stream(config: Config) -> Result<()> {
         if let Ok(bf) = create_data_buffer() {
             buffers.push(bf);
         }
+
+        println!("{:?}",buffers);
+
 
         let (sender, receiver) = channel();
         senders.push(sender);
@@ -107,8 +132,11 @@ start_log_stream(config: Config) -> Result<()> {
                 });
         });
     }
-    // never return
-    loop {}
+    rx.recv().expect("unable to receive from channel");
+    for buf in buffers {
+        println!("{:?}",buf);
+        destroy_data_buffer(buf.name);
+    }
     Ok(()) // known unreachable.
 }
 
