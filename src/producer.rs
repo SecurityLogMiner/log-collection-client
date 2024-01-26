@@ -74,7 +74,9 @@ handle_log_data(log_channel: Receiver<String>,
         );
         written = written + &log_line.chars().count();
         if written > 1000 {
-            let res = awssdk::put_record_batch(&client,"PUT-S3-ZG3gK",testvec.clone()).await;
+            let res = awssdk::put_record_batch(&client,
+                                               "PUT-S3-ZG3gK",
+                                               testvec.clone()).await;
             match res {
                 Ok(val) => println!("success: {val:?}"),
                 Err(err) => eprintln!("error: {err}"),
