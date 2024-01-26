@@ -4,7 +4,7 @@ mod awssdk;
 
 use producer::{start_log_stream};
 use config::{read_config};
-use aws_sdk_kinesis::{Error};
+use aws_sdk_firehose::{Error};
 
 #[tokio::main]
 async fn 

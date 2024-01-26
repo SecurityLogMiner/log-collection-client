@@ -1,8 +1,9 @@
-use aws_sdk_kinesis::primitives::Blob;
-use aws_sdk_kinesis::{config::Region, meta::PKG_VERSION, Client, Error};
-use aws_sdk_kinesis::operation::list_streams;
-
-
+use aws_config::meta::region::RegionProviderChain;
+use aws_sdk_firehose::error::SdkError;
+use aws_sdk_firehose::operation::put_record_batch::{PutRecordBatchError, PutRecordBatchOutput};
+use aws_sdk_firehose::primitives::Blob;
+use aws_sdk_firehose::types::Record;
+use aws_sdk_firehose::{config::Region, meta::PKG_VERSION, Client, Error};
 /*
  * A buffer file will be used to accumulate the source data and, upon threshhold 
  * or time limit, will send the processed data (the file) as a batch using 
@@ -22,43 +23,34 @@ start_elastic() -> Result<(), Error> {
 }
 
 pub async fn
-start_kinesis() -> Result<Client, Error> {
+start_firehose() -> Result<Client, Error> {
     let config = aws_config::load_from_env().await;
     let client = Client::new(&config);
     Ok(client)
 }
 
 pub async fn 
-show_streams(client: &Client
-                      ) -> Result<(), Error> {
-    let resp = client.list_streams().send().await?;
-
-    println!("Stream names:");
-
-    let streams = resp.stream_names;
-    for stream in &streams {
-        println!("  {}", stream);
-    }
-
-    println!("Found {} stream(s)", streams.len());
-
+show_streams(client: &Client) -> Result<(), Error> {
+    todo!();
     Ok(())
 }
 
 pub async fn 
 add_record(client: &Client, stream: &str, key: &str, data: &str
            ) -> Result<(), Error> {
-    let blob = Blob::new(data);
-
-    client
-        .put_record()
-        .data(blob)
-        .partition_key(key)
-        .stream_name(stream)
-        .send()
-        .await?;
-
     println!("Put data into stream.");
 
     Ok(())
+}
+pub async fn put_record_batch(
+    client: &Client,
+    stream: &str,
+    data: Vec<Record>,
+) -> Result<PutRecordBatchOutput, SdkError<PutRecordBatchError>> {
+    client
+        .put_record_batch()
+        .delivery_stream_name(stream)
+        .set_records(Some(data))
+        .send()
+        .await
 }

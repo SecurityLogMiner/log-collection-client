@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use aws_sdk_kinesis::Client;
+use aws_sdk_firehose::Client;
 
 ////begin of pita////
 // https://doc.rust-lang.org/stable/book/ch19-06-macros.html
