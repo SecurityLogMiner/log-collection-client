@@ -4,6 +4,9 @@ use aws_sdk_firehose::operation::put_record_batch::{PutRecordBatchError, PutReco
 use aws_sdk_firehose::primitives::Blob;
 use aws_sdk_firehose::types::Record;
 use aws_sdk_firehose::{config::Region, meta::PKG_VERSION, Client, Error};
+
+use aws_sdk_dynamodb as dynamodb;
+
 /*
  * A buffer file will be used to accumulate the source data and, upon threshhold 
  * or time limit, will send the processed data (the file) as a batch using 
@@ -25,7 +28,14 @@ start_elastic() -> Result<(), Error> {
 pub async fn
 start_firehose() -> Result<Client, Error> {
     let config = aws_config::load_from_env().await;
-    let client = Client::new(&config);
+    let client = aws_sdk_firehose::Client::new(&config);
+    Ok(client)
+}
+
+pub async fn
+start_dynamo() -> Result<Client, Error> {
+    let config = aws_config::load_from_env().await;
+    let client = aws_sdk_dynamodb::Client::new(&config);
     Ok(client)
 }
 
