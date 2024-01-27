@@ -1,12 +1,14 @@
 mod config;
 mod producer;
-mod awssdk;
-//mod dynamo;
+mod firehosesdk;
+mod dynamosdk;
 
 use producer::{start_log_stream};
 use config::{read_config};
-use aws_sdk_firehose::{Error};
 use std::env;
+
+/*transfer these into dynamo mod */
+use aws_sdk_dynamodb::operation::list_tables::{ListTablesError};
 
 #[tokio::main]
 async fn 
@@ -22,6 +24,15 @@ main() -> Result<(), std::io::Error> {
         }
     } else {
         println!("make dynamo");
+        if let Ok(client) = dynamosdk::start_dynamodb().await {
+            println!("client exists");
+            if let Ok(res) = dynamosdk::create_table(&client,
+                                                       "eptesttable",
+                                                       "epkeyitem").await {
+                println!("{res:?}");
+            }
+
+        }
     }
 
     Ok(())

@@ -8,7 +8,7 @@ use std::thread;
 use std::sync::mpsc::{channel,Sender,Receiver};
 use uuid::Uuid;
 use crate::config::{Config};
-use crate::awssdk;
+use crate::firehosesdk;
 use aws_sdk_firehose::{Client, types::Record, primitives::Blob};
 
 #[derive(Debug, Clone)]
@@ -74,7 +74,7 @@ handle_log_data(log_channel: Receiver<String>,
         );
         written = written + &log_line.chars().count();
         if written > 1000 {
-            let res = awssdk::put_record_batch(&client,
+            let res = firehosesdk::put_record_batch(&client,
                                                "PUT-S3-ZG3gK",
                                                testvec.clone()).await;
             match res {
@@ -102,7 +102,7 @@ start_log_stream(config: Config) -> Result<()> {
 
     for input_log_file in config.log_paths.clone().into_iter() {
         // replace this with start_firehose().await. 
-        if let Ok(client) = awssdk::start_firehose().await {
+        if let Ok(client) = firehosesdk::start_firehose().await {
             clients.push(client);
         }
 
