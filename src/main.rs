@@ -12,49 +12,62 @@ async fn main() -> Result<(), std::io::Error> {
 
     let args: Vec<String> = env::args().collect();
 
-    if args.len() == 2 {
-
-        if args[1] == "--help" || args[1] == "-h"{
-            print_help();
-            process::exit(0);
-        }
-
+    if args.len() <= 2 {
         let config_data = read_config();
         match config_data {
             Some(config) => {
-                let destination = args[1].as_str();
-                println!("Destination: {}", destination);
+                if args.len() == 1 {
+                    //let _ = start_log_stream(config.clone()).await;
+                    let _ = start_log_stream(config.log_paths.clone()).await;
+                }
+                if args.len() == 2 {
+                    if args[1] == "--help" || args[1] == "-h" {
+                        print_help();
+                    }
+                    let destination = args[1].as_str();
+                    println!("Destination: {}", destination);
                     match destination {
-                        "kdf" => {
-                            // Call the function to start log stream to 
-                            let _ = start_log_stream(config).await;
-                        }
                         "dynamodb" => {
                             // Call the function to create DynamoDB table
-                            println!("Creating DynamoDB table...");
-                            if let Ok(client) = dynamosdk::start_dynamodb().await {
-                                if let Ok(res) = dynamosdk::create_table(&client, "eptesttable", "epkeyitem").await {
-                                    println!("{:?}", res);
-                                }
+                            let dynamoclient = dynamosdk::start_dynamodb().await;
+                            match dynamoclient {
+                                Ok(client) => {
+                                    // check if the table listed in the configuration file
+                                    // exists. If it does not, create it. 
+                                    println!("{:?}",&config);
+                                    let tables = client.list_tables()
+                                                        .into_paginator()
+                                                        .items()
+                                                        .send(); 
+                                    let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
+                                    let mut table = String::from("");
+                                    for tbl in table_names {
+                                        if tbl == config.dynamo_table_name {
+                                            println!("found {table:?}");
+                                            table = tbl;
+                                        }
+                                    } 
+                                    if let Ok(table) = dynamosdk::create_table(&client,
+                                                            "default_table",
+                                                            "default_key").await {
+                                        println!("{table:?}");
+                                    }
+                                },
+                                Err(_) => todo!(),
                             }
                         }
-                        "s3" =>{
-                            // todo
-                            println!("Inserting data into S3 bucket");
-                        }
                         "elastic" => {
-                            //todo
-                            println!("Sending data to Elastic Stack");
+                            todo!();
                         }
-                    _ => println!("Invalid destination"),
+                        _ => {
+                            print_help();
+                        }
+                    }
                 }
             }
             None => panic!("Error reading configuration. Fix it."),
         }
-    } else {
-        println!("Usage: cargo run -- <destination>");
-        println!("For more information: cargo run -- --help");
-    }
+    } 
 
     Ok(())
 }
@@ -63,7 +76,6 @@ fn print_help() {
     println!("Usage: cargo run -- <destination>");
     println!("Available Destinations:");
     println!("  dynamodb       Create DynamoDB table");
-    println!("  kdf            Send logs to Kinesis Firehose");
-    println!("  s3             Send logs to S3 bucket");
     println!("  elastic        Send logs to Elastic");
+    process::exit(0);
 }

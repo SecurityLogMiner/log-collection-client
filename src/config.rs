@@ -26,21 +26,17 @@ macro_rules! show_field_names {
 }
 show_field_names!{
 pub struct Config {
-    pub server_address: String,
-    pub server_port: u16,
     pub log_file_path: String,
-    pub credentials: String // TLS needed
+    pub dynamo_table_name: String,
 }}
 */
 ////end of pita////
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
-    pub server_address: String, // consider using Ipv4Addr::UNSPECIFIED
-    pub server_port: String,
     pub log_paths: Vec<String>,
-    pub credentials: String // TLS needed
+    pub dynamo_table_name: String, 
 }
 
 pub fn
@@ -70,10 +66,8 @@ fn
 set_configuration(list: Vec<String>) -> Config {
     // maybe convert these to &str later on.
     let mut config = Config {
-        server_address: String::from(""),
-        server_port: String::from(""),
         log_paths: Vec::new(),
-        credentials: String::from(""),
+        dynamo_table_name: String::from(""),
     };
 
     // TODO: clean this up somehow. just make it work for now.
@@ -84,8 +78,6 @@ set_configuration(list: Vec<String>) -> Config {
     for item in list {
         let setting = item.split(" ").collect::<Vec<_>>();
         match setting[0] {
-            "server_address" => config.server_address = setting[1].to_string(),
-            "server_port" => config.server_port = setting[1].to_string(),
             "log_paths" => {
                 let mut logs = item.split(' ').collect::<Vec<_>>();
                 let mut paths = Vec::new();
@@ -100,7 +92,7 @@ set_configuration(list: Vec<String>) -> Config {
                 drop(paths);
             }
 
-            "credentials" => config.credentials = setting[1].to_string(),
+            "dynamo_table_name" => config.dynamo_table_name = setting[1].to_string(),
             _ => continue
         }
     }   

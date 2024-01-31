@@ -88,7 +88,7 @@ handle_log_data(log_channel: Receiver<String>,
 }
 
 pub async fn 
-start_log_stream(config: Config) -> Result<()> {
+start_log_stream(paths: Vec<String>) -> Result<()> {
     let (tx,rx) = channel();
     ctrlc::set_handler(move || {
         println!("handle ctrlc signal");
@@ -100,7 +100,7 @@ start_log_stream(config: Config) -> Result<()> {
     let mut buffers = Vec::<DataBuffer>::new();
     let mut clients = Vec::<Client>::new();
 
-    for input_log_file in config.log_paths.clone().into_iter() {
+    for input_log_file in paths.clone().into_iter() {
         // replace this with start_firehose().await. 
         if let Ok(client) = firehosesdk::start_firehose().await {
             clients.push(client);
