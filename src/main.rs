@@ -2,8 +2,10 @@ mod config;
 mod producer;
 mod firehosesdk;
 mod dynamosdk;
+mod util;
 
 use producer::start_log_stream;
+// util::{print_help, send_logs_to_all_destinations};
 use config::read_config;
 use std::{env, process};
 
@@ -15,8 +17,20 @@ async fn main() -> Result<(), std::io::Error> {
     if args.len() == 2 {
 
         if args[1] == "--help" || args[1] == "-h"{
-            print_help();
+            util::print_help().await;
             process::exit(0);
+        }
+
+        if args[1] == "all" {
+            // Handle sending logs to all destinations
+            let config_data = config::read_config();
+            match config_data {
+                Some(config) => {
+                    util::send_logs_to_all_destinations(config).await;
+                }
+                None => panic!("Error reading configuration. Fix it."),
+            }
+            return Ok(());
         }
 
         let config_data = read_config();
@@ -46,7 +60,7 @@ async fn main() -> Result<(), std::io::Error> {
                             //todo
                             println!("Sending data to Elastic Stack");
                         }
-                    _ => println!("Invalid destination"),
+                    _ => println!("Invalid destination: Use cargo run -- --help"),
                 }
             }
             None => panic!("Error reading configuration. Fix it."),
@@ -59,11 +73,3 @@ async fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn print_help() {
-    println!("Usage: cargo run -- <destination>");
-    println!("Available Destinations:");
-    println!("  dynamodb       Create DynamoDB table");
-    println!("  kdf            Send logs to Kinesis Firehose");
-    println!("  s3             Send logs to S3 bucket");
-    println!("  elastic        Send logs to Elastic");
-}
