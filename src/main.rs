@@ -7,6 +7,7 @@ mod iam;
 
 use aws_config::imds::Client;
 use producer::start_log_stream;
+// util::{print_help, send_logs_to_all_destinations};
 use config::read_config;
 use std::{env, process};
 
@@ -72,6 +73,7 @@ async fn main() -> Result<(), std::io::Error> {
                         _ => {
                             util::print_help().await;
                         }
+                    _ => println!("Invalid destination: Use cargo run -- --help"),
                     }
                 }
             }
