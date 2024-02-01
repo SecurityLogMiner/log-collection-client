@@ -1,6 +1,7 @@
 use std::process::{Command, Stdio};
 use tokio::time;
 use ctrlc;
+use async_trait::async_trait;
 use std::fs::{File,OpenOptions};
 use std::iter::zip;
 use std::io::{BufReader, BufRead, Write, Result};
@@ -8,14 +9,31 @@ use std::thread;
 use std::sync::mpsc::{channel,Sender,Receiver};
 use uuid::Uuid;
 use crate::config::{Config};
-use crate::firehosesdk;
 use crate::dynamosdk;
-use aws_sdk_firehose::Client as FirehoseClient;//::{Client, types::Record, primitives::Blob};
 use aws_sdk_dynamodb::Client as DynamodbClient;
 
 #[derive(Debug, Clone)]
 pub struct DataBuffer {
     name: String,
+}
+
+// The trait and impl will need to move to the dynamosdk module. 
+#[async_trait]
+trait TestDynamo {
+    fn show(&self) -> String;
+    async fn handle_log_data(&self,log_channel: Receiver<String>);
+}
+#[async_trait]
+impl TestDynamo for DynamodbClient {
+    fn show(&self) -> String {
+        format!("{self:?}")
+    }
+
+    async fn handle_log_data(&self, log_channel: Receiver<String>) {
+        for log_line in log_channel {
+            println!("{log_line}");
+        }
+    }
 }
 
 fn 
@@ -57,75 +75,32 @@ pub fn insert_into_buffer(mut bf: File, data: &str) -> Result<()> {
     bf.write_all(b"some data should be in amihere.txt")?;
     Ok(())
 }
-/*
-trait DataHandler {
-    type Channel;
-    type Client;
-    fn handle_log_data(&self,log_channel: Receiver<String>, client: aws_sdk_dynamodb::Client, buffer: DataBuffer)
-}
-fn handle_log_data<T: DynamoT + FirehoseT>(client: &T) {
-    client.handle_dynamo_data();
-}
-*/
 
 async fn 
-handle_log_data(log_channel: Receiver<String>, client: aws_sdk_dynamodb::Client, buffer: DataBuffer) {
-    //let mut buf = OpenOptions::new()
-    //    .write(true)
-    //    .append(true)
-    //    .open(buffer.name.to_string()).expect("issue");
-    //let mut written = 0;
-    //let mut testvec = Vec::<Record>::new();
+handle_log_data(log_channel: Receiver<String>, client: DynamodbClient) {
+    println!("{:?}",client.show());
     for log_line in log_channel {
         println!("{log_line}");
-        //
-        //testvec.push(
-        //    Record::builder()
-        //    .set_data(Some(Blob::new(log_line.clone())))
-        //    .build()
-        //    .expect("error sending the data"),
-        //);
-        //written = written + &log_line.chars().count();
-        //if written > 1000 {
-        //    let res = firehosesdk::put_record_batch(&client,
-        //                                       "PUT-S3-ZG3gK",
-        //                                       testvec.clone()).await;
-        //    match res {
-        //        Ok(val) => println!("success: {val:?}"),
-        //        Err(err) => eprintln!("error: {err}"),
-        //    }
-        //    println!("wrote: {written}");
-        //    written = 0;
-        //}
     }
 }
 
 pub async fn 
-start_log_stream(paths: Vec<String>, dest: &str) -> Result<()> {
+start_log_stream(paths: Vec<String>) -> Result<()> {
     let (tx,rx) = channel();
     ctrlc::set_handler(move || {
         println!("handle ctrlc signal");
         tx.send(()).expect("unable to send termination signal");
     }).expect("issue with ctrlc signal handling");
-
+    
     let mut senders = Vec::new();
     let mut receivers = Vec::new();
-    // could use this for table names
-    let mut buffers = Vec::<DataBuffer>::new();
     let mut clients = Vec::<_>::new();
-    let mut firehose_clients = Vec::<_>::new();
     let mut log_count = 0;
 
     for input_log_file in paths.clone().into_iter() {
         log_count += 1;
-        // replace this with start_firehose().await. 
-        //if let Ok(client) = firehosesdk::start_firehose().await {
-        //    clients.push(client);
-        //}
-
-        if let Ok(bf) = create_data_buffer() {
-            println!("Creating data buffer {}", bf.name);
-            buffers.push(bf);
+        if let Ok(client) = dynamosdk::start_dynamodb().await {
+            clients.push(client);
         }
 
         let (sender, receiver) = channel();
@@ -139,42 +114,23 @@ start_log_stream(paths: Vec<String>, dest: &str) -> Result<()> {
         });
     }
 
-    if dest == "dynamodb" {
-        for i in 0..log_count {
-            println!("{i}");
-            if let Ok(client) = dynamosdk::start_dynamodb().await {
-                clients.push(client);
-            }
-        }
-    }
-    if dest == "s3" {
-        for i in 0..log_count {
-            println!("{i}");
-            if let Ok(client) = firehosesdk::start_firehose().await {
-                firehose_clients.push(client);
-            }
-        }
-    }
-
-    let iter = zip(receivers.into_iter(), zip(clients,buffers.clone()));
-    for (receiver, client_buffer) in iter {
-        let (client, buffer) = client_buffer;
+    //let iter = zip(receivers.into_iter(), zip(clients, buffers.clone()));
+    let iter = zip(receivers.into_iter(), clients);
+    for (receiver, client) in iter {
+        //let (client, buffer) = client_buffer;
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
-                    handle_log_data(receiver, client, buffer).await;
+                    client.handle_log_data(receiver).await;
                 });
         });
     }
 
     rx.recv().expect("unable to receive from channel");
-    for buf in buffers {
-        println!("Deleting {}",buf.name);
-        let _ = destroy_data_buffer(buf.name);
-    }
 
     Ok(())
 }
+
 
 #[test]
 fn test_the_thing() {

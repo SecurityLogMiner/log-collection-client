@@ -1,6 +1,5 @@
 mod config;
 mod producer;
-mod firehosesdk;
 mod dynamosdk;
 
 use producer::start_log_stream;
@@ -17,7 +16,7 @@ async fn main() -> Result<(), std::io::Error> {
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-                    let _ = start_log_stream(config.log_paths.clone(),"s3").await;
+                    let _ = start_log_stream(config.log_paths.clone()).await;
                 }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {
@@ -27,7 +26,7 @@ async fn main() -> Result<(), std::io::Error> {
                     println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
-                            // Call the function to create DynamoDB table
+                            // get the client
                             let dynamoclient = dynamosdk::start_dynamodb().await;
                             match dynamoclient {
                                 Ok(client) => {
@@ -43,7 +42,7 @@ async fn main() -> Result<(), std::io::Error> {
                                         if tbl == config.dynamo_table_name {
                                             println!("found {tbl:?}");
                                             // use the table
-                                            let _ = start_log_stream(config.log_paths.clone(),"dynamodb").await;
+                                            let _ = start_log_stream(config.log_paths.clone()).await;
                                         }
                                     } 
                                     if let Ok(table) = dynamosdk::create_table(&client,

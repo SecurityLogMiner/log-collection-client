@@ -1,6 +1,9 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+//use aws_sdk_firehose;
+//use aws_sdk_dynamodb;
+
 ////begin of pita////
 // https://doc.rust-lang.org/stable/book/ch19-06-macros.html
 // ISSUE: when a struct member is made pub, this macro needs to match
@@ -114,3 +117,4 @@ set_configuration(list: Vec<String>) -> Config {
     }   
     config
 }
+

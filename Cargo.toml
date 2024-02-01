@@ -10,6 +10,7 @@ aws-sdk-firehose = "1.13.0"
 ctrlc = "3.4.2"
 aws-sdk-dynamodb = "1.13.0"
 clap = { version = "4.4.18", features = ["derive"] }
+async-trait = "0.1.77"
 
 [dependencies.uuid]
 version = "1.7.0"
