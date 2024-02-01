@@ -17,8 +17,7 @@ async fn main() -> Result<(), std::io::Error> {
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-                    //let _ = start_log_stream(config.clone()).await;
-                    let _ = start_log_stream(config.log_paths.clone()).await;
+                    let _ = start_log_stream(config.log_paths.clone(),"s3").await;
                 }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {
@@ -40,11 +39,11 @@ async fn main() -> Result<(), std::io::Error> {
                                                         .items()
                                                         .send(); 
                                     let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
-                                    let mut table = String::from("");
                                     for tbl in table_names {
                                         if tbl == config.dynamo_table_name {
-                                            println!("found {table:?}");
-                                            table = tbl;
+                                            println!("found {tbl:?}");
+                                            // use the table
+                                            let _ = start_log_stream(config.log_paths.clone(),"dynamodb").await;
                                         }
                                     } 
                                     if let Ok(table) = dynamosdk::create_table(&client,
