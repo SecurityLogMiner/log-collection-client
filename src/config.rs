@@ -38,6 +38,22 @@ pub struct Config {
     pub dynamo_table_name: String, 
 }
 
+/*
+ * In order to handle the option for the user to send logs to all destinations,
+ * a solution could be to define a configuration line that lists the destinations
+ * that the user would like available.
+ *
+ * Then, in the same way that the log source are read, instantiate an aws client 
+ * for that particular service in the destination list.
+ *
+ * I still see an issue being that the src/producer:handle_log_data function would 
+ * still need a trait defined for the client parameter it is passed.
+ *
+ * New branch that this potential solution will be implemented on:
+ *      send-to-all-<your id>
+ *
+ */
+
 pub fn
 read_config() -> Option<Config> {
     let mut fields: Vec<String> = Vec::new();

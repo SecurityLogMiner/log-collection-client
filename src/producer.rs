@@ -57,7 +57,7 @@ pub fn insert_into_buffer(mut bf: File, data: &str) -> Result<()> {
     bf.write_all(b"some data should be in amihere.txt")?;
     Ok(())
 }
-
+/*
 trait DataHandler {
     type Channel;
     type Client;
@@ -66,6 +66,7 @@ trait DataHandler {
 fn handle_log_data<T: DynamoT + FirehoseT>(client: &T) {
     client.handle_dynamo_data();
 }
+*/
 
 async fn 
 handle_log_data(log_channel: Receiver<String>, client: aws_sdk_dynamodb::Client, buffer: DataBuffer) {
@@ -96,7 +97,6 @@ handle_log_data(log_channel: Receiver<String>, client: aws_sdk_dynamodb::Client,
         //    println!("wrote: {written}");
         //    written = 0;
         //}
-
     }
 }
 
@@ -166,7 +166,6 @@ start_log_stream(paths: Vec<String>, dest: &str) -> Result<()> {
                 });
         });
     }
-
 
     rx.recv().expect("unable to receive from channel");
     for buf in buffers {
