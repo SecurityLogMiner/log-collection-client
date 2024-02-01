@@ -45,6 +45,9 @@ pub struct Config {
  *
  * Then, in the same way that the log source are read, instantiate an aws client 
  * for that particular service in the destination list.
+ * 
+ * Since the config struct knows how many log sources to read from, an equal count of
+ * client could be made for each service the user has listed.
  *
  * I still see an issue being that the src/producer:handle_log_data function would 
  * still need a trait defined for the client parameter it is passed.
@@ -105,7 +108,6 @@ set_configuration(list: Vec<String>) -> Config {
                 config.log_paths = paths.clone();
                 drop(paths);
             }
-
             "dynamo_table_name" => config.dynamo_table_name = setting[1].to_string(),
             _ => continue
         }
