@@ -18,7 +18,6 @@ async fn main() -> Result<(), std::io::Error> {
 
         if args[1] == "--help" || args[1] == "-h"{
             util::print_help().await;
-            process::exit(0);
         }
 
         if args[1] == "all" {

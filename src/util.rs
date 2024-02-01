@@ -2,6 +2,8 @@
 use crate::config::Config;
 use crate::producer::start_log_stream;
 use crate::dynamosdk; // Import other modules as needed
+use std::{env, process};
+
 
 pub async fn send_logs_to_all_destinations(config: Config) {
     // Call the functions to send logs to all destinations
@@ -18,4 +20,5 @@ pub async fn print_help() {
     println!("  kdf            Send logs to Kinesis Firehose");
     println!("  s3             Send logs to S3 bucket");
     println!("  elastic        Send logs to Elastic");
+    process::exit(0);
 }
