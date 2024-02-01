@@ -76,14 +76,6 @@ pub fn insert_into_buffer(mut bf: File, data: &str) -> Result<()> {
     Ok(())
 }
 
-async fn 
-handle_log_data(log_channel: Receiver<String>, client: DynamodbClient) {
-    println!("{:?}",client.show());
-    for log_line in log_channel {
-        println!("{log_line}");
-    }
-}
-
 pub async fn 
 start_log_stream(paths: Vec<String>) -> Result<()> {
     let (tx,rx) = channel();
