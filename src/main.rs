@@ -34,7 +34,37 @@ async fn main() -> Result<(), std::io::Error> {
                     println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
+<<<<<<< HEAD
                             util::send_dynamodb(config).await;
+=======
+                            // Call the function to create DynamoDB table
+                            let dynamoclient = dynamosdk::start_dynamodb().await;
+                            match dynamoclient {
+                                Ok(client) => {
+                                    // check if the table listed in the configuration file
+                                    // exists. If it does not, create it. 
+                                    println!("{:?}",&config);
+                                    let tables = client.list_tables()
+                                                        .into_paginator()
+                                                        .items()
+                                                        .send(); 
+                                    let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
+                                    for tbl in table_names {
+                                        if tbl == config.dynamo_table_name {
+                                            println!("found {tbl:?}");
+                                            // use the table
+                                            let _ = start_log_stream(config.log_paths.clone(),"dynamodb").await;
+                                        }
+                                    } 
+                                    if let Ok(table) = dynamosdk::create_table(&client,
+                                                            "default_table",
+                                                            "default_key").await {
+                                        println!("{table:?}");
+                                    }
+                                },
+                                Err(_) => todo!(),
+                            }
+>>>>>>> 2ba48e2 (update)
                         }
                         "elastic" => {
                             todo!();

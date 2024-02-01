@@ -4,17 +4,6 @@ use aws_sdk_firehose::operation::put_record_batch::{PutRecordBatchError, PutReco
 use aws_sdk_firehose::primitives::Blob;
 use aws_sdk_firehose::types::Record;
 use aws_sdk_firehose::{config::Region, meta::PKG_VERSION, Client, Error};
-/*
- * A buffer file will be used to accumulate the source data and, upon threshhold 
- * or time limit, will send the processed data (the file) as a batch using 
- * aws firehose. The test against this that I can think of is having an attacker
- * try to read and/or alter either the data source or the processed data. 
- */
-
-pub async fn
-start_elastic() -> Result<(), Error> {
-    Ok(())
-}
 
 pub async fn 
 show_streams(client: &Client) -> Result<(), Error> {

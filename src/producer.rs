@@ -167,6 +167,7 @@ start_log_stream(paths: Vec<String>, dest: &str) -> Result<()> {
         });
     }
 
+
     rx.recv().expect("unable to receive from channel");
     for buf in buffers {
         println!("Deleting {}",buf.name);
