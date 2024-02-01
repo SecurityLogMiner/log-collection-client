@@ -51,7 +51,6 @@ pub struct Config {
  *
  * New branch that this potential solution will be implemented on:
  *      send-to-all-<your id>
- *
  */
 
 pub fn
