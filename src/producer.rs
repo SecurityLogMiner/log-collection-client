@@ -110,6 +110,7 @@ start_log_stream(paths: Vec<String>, dest: &str) -> Result<()> {
 
     let mut senders = Vec::new();
     let mut receivers = Vec::new();
+    
     // could use this for table names
     let mut buffers = Vec::<DataBuffer>::new();
     let mut clients = Vec::<_>::new();
