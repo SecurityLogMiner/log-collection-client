@@ -3,6 +3,7 @@ mod producer;
 mod firehosesdk;
 mod dynamosdk;
 mod util;
+mod iam;
 
 use producer::start_log_stream;
 use config::read_config;
@@ -15,6 +16,8 @@ async fn main() -> Result<(), std::io::Error> {
 
     if args.len() <= 2 {
         let config_data = read_config();
+        
+        iam::start_iam();
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
