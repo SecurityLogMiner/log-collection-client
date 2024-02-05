@@ -1,42 +1,13 @@
-/*
-use tokio::time;
-use async_trait::async_trait;
-use std::thread;
-use std::sync::mpsc::{Receiver};
-*/
-
-
 use aws_config::meta::region::RegionProviderChain;
 use aws_sdk_dynamodb::error::SdkError;
 use aws_sdk_dynamodb::primitives::Blob;
 use aws_sdk_dynamodb::{config::Region, meta::PKG_VERSION, Client, Error};
 use aws_sdk_dynamodb::operation::create_table::{CreateTableOutput,CreateTableError};
+use aws_sdk_dynamodb::operation::put_item::{PutItemOutput, PutItemError};
 use aws_sdk_dynamodb::error::{BuildError};
 use aws_sdk_dynamodb::types::{
     AttributeDefinition, KeySchemaElement, KeyType, ProvisionedThroughput, ScalarAttributeType,
 };
-
-// The trait and impl will need to move to the dynamosdk module. 
-// Not yet ready to do so.
-/*
-#[async_trait]
-pub trait TestDynamo {
-    fn show(&self) -> String;
-    async fn handle_log_data(&self,log_channel: Receiver<String>);
-}
-#[async_trait]
-pub impl TestDynamo for DynamodbClient {
-    fn show(&self) -> String {
-        format!("{self:?}")
-    }
-
-    pub async fn handle_log_data(&self, log_channel: Receiver<String>) {
-        for log_line in log_channel {
-            println!("{log_line}");
-        }
-    }
-}
-*/
 
 pub async fn
 start_dynamo() -> Result<Client, Error> {
@@ -99,4 +70,3 @@ pub async fn create_table(
         }
     }
 }
-

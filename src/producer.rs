@@ -11,6 +11,7 @@ use uuid::Uuid;
 use crate::config::{Config};
 use crate::dynamosdk;
 use aws_sdk_dynamodb::Client as DynamodbClient;
+use aws_sdk_dynamodb::types::AttributeValue;
 
 #[derive(Debug, Clone)]
 pub struct DataBuffer {
@@ -30,8 +31,17 @@ impl TestDynamo for DynamodbClient {
     }
 
     async fn handle_log_data(&self, log_channel: Receiver<String>) {
-        for log_line in log_channel {
-            println!("{log_line}");
+        if let Ok(table) = self.describe_table().table_name("eptesttable").send().await {
+            for log_line in log_channel {
+                println!("{log_line}");
+                let res = self.put_item()
+                    .table_name("eptesttable")
+                    .item("epkeyitem",AttributeValue::S(log_line))
+                    .send().await;
+                // dumb error checking for now. eventually, this will need to be 
+                // sent to the status api for the user.
+                //println!("{res:?}");
+            }
         }
     }
 }
@@ -106,10 +116,8 @@ start_log_stream(paths: Vec<String>) -> Result<()> {
         });
     }
 
-    //let iter = zip(receivers.into_iter(), zip(clients, buffers.clone()));
     let iter = zip(receivers.into_iter(), clients);
     for (receiver, client) in iter {
-        //let (client, buffer) = client_buffer;
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
