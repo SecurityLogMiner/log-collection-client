@@ -5,6 +5,7 @@ mod dynamosdk;
 mod util;
 mod iam;
 
+use aws_config::imds::Client;
 use producer::start_log_stream;
 use config::read_config;
 use std::{env, process};
@@ -16,8 +17,10 @@ async fn main() -> Result<(), std::io::Error> {
 
     if args.len() <= 2 {
         let config_data = read_config();
+
+        let iam_client = iam::start_iam().await;
         
-        iam::start_iam();
+
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
