@@ -73,7 +73,8 @@ async fn main() -> Result<(), std::io::Error> {
 fn print_help() {
     println!("Usage: cargo run -- <destination>");
     println!("Available Destinations:");
-    println!("  dynamodb       Create DynamoDB table");
-    println!("  elastic        Send logs to Elastic");
+    println!("  dynamodb        Create DynamoDB table");
+    println!("  opensearch      Create DynamoDB table");
+    println!("  elastic (todo)  Send logs to Elastic");
     process::exit(0);
 }

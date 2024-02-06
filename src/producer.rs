@@ -18,18 +18,15 @@ pub struct DataBuffer {
     name: String,
 }
 
-// The trait and impl will need to move to the dynamosdk module. 
+// The trait and impl will need to move to the a trait module. The impl for Type will
+// have to go in each sdk. Eg; dynamosdk.rs, firehosesdk.rs. For now, the ugliness will
+// stay here.
 #[async_trait]
-trait TestDynamo {
-    fn show(&self) -> String;
+trait DataHandler {
     async fn handle_log_data(&self,log_channel: Receiver<String>);
 }
 #[async_trait]
-impl TestDynamo for DynamodbClient {
-    fn show(&self) -> String {
-        format!("{self:?}")
-    }
-
+impl DataHandler for DynamodbClient {
     async fn handle_log_data(&self, log_channel: Receiver<String>) {
         if let Ok(table) = self.describe_table().table_name("eptesttable").send().await {
             for log_line in log_channel {
