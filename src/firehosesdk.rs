@@ -25,6 +25,7 @@ add_record(client: &Client, stream: &str, key: &str, data: &str
 
     Ok(())
 }
+
 pub async fn put_record_batch(
     client: &Client,
     stream: &str,

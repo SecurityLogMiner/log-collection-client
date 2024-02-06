@@ -1,9 +1,11 @@
+use aws_sdk_dynamodb::client;
+
 // util.rs serves as housing various utility functions that are used in main.rs
 use crate::config::Config;
 use crate::producer::start_log_stream;
 use crate::dynamosdk; // Import other modules as needed
 use std::{env, process};
-
+use crate::iam;
 
 pub async fn send_logs_to_all_destinations(config: Config) {
     // Call the functions to send logs to all destinations
@@ -19,10 +21,33 @@ pub async fn print_help() {
     println!("  dynamodb       Create DynamoDB table");
     println!("  kdf            Send logs to Kinesis Firehose");
     println!("  s3             Send logs to S3 bucket");
+    println!("  iam            Test iam features");
     println!("  elastic        Send logs to Elastic");
     process::exit(0);
 }
 
+pub async fn initialize_iam(config:Config){
+
+    let iam_client = iam::start_iam().await;
+    println!("{:?}",&config);
+
+    match iam_client{
+        Ok(client) => {
+            if let Ok(users) = iam::list_users(&client,
+                None,
+                None,
+                None).await {
+                    print!("Printing users: ");
+                    for user in users.users {
+                        println!("{}", user.user_name);
+                }
+            
+        }
+    },
+    Err(_) => todo!(),
+}
+
+}
 pub async fn send_dynamodb(config: Config) {
 // Call the function to create DynamoDB table
 let dynamoclient = dynamosdk::start_dynamodb().await;
@@ -40,7 +65,7 @@ match dynamoclient {
             if tbl == config.dynamo_table_name {
                 println!("found {tbl:?}");
                 // use the table
-                let _ = start_log_stream(config.log_paths.clone(),"dynamodb").await;
+                let _ = start_log_stream(config.log_paths.clone()).await;
             }
         } 
         if let Ok(table) = dynamosdk::create_table(&client,

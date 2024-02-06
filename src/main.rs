@@ -19,8 +19,6 @@ async fn main() -> Result<(), std::io::Error> {
     if args.len() <= 2 {
         let config_data = read_config();
 
-        let iam_client = iam::start_iam().await;
-        
 
         match config_data {
             Some(config) => {
@@ -29,11 +27,10 @@ async fn main() -> Result<(), std::io::Error> {
                 //Create a setup functoin 
                 // User gives IAM credentials; as long as they have correct policies; based on the policies set up on whatever they have available.
                 // Attach policies to IAM user based on the set up function
-                    let _ = start_log_stream(config.log_paths.clone(),"s3").await;
+                    let _ = start_log_stream(config.log_paths.clone()).await;
                 }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {
-                        util::print_help().await;
                         util::print_help().await;
                     }
 
@@ -42,44 +39,15 @@ async fn main() -> Result<(), std::io::Error> {
                     match destination {
                         "dynamodb" => {
                             util::send_dynamodb(config).await;
-<<<<<<< HEAD
-                            util::send_dynamodb(config).await;
-=======
-                            // Call the function to create DynamoDB table
-                            let dynamoclient = dynamosdk::start_dynamodb().await;
-                            match dynamoclient {
-                                Ok(client) => {
-                                    // check if the table listed in the configuration file
-                                    // exists. If it does not, create it. 
-                                    println!("{:?}",&config);
-                                    let tables = client.list_tables()
-                                                        .into_paginator()
-                                                        .items()
-                                                        .send(); 
-                                    let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
-                                    for tbl in table_names {
-                                        if tbl == config.dynamo_table_name {
-                                            println!("found {tbl:?}");
-                                            // use the table
-                                            let _ = start_log_stream(config.log_paths.clone(),"dynamodb").await;
-                                        }
-                                    } 
-                                    if let Ok(table) = dynamosdk::create_table(&client,
-                                                            "default_table",
-                                                            "default_key").await {
-                                        println!("{table:?}");
-                                    }
-                                },
-                                Err(_) => todo!(),
-                            }
->>>>>>> 2ba48e2 (update)
                         }
                         "elastic" => {
                             todo!();
                         }
+                        "iam" => {
+                            util::initialize_iam(config).await;
+                        }
 
                         _ => {
-                            util::print_help().await;
                             util::print_help().await;
                         }
                     }

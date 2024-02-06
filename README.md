@@ -109,6 +109,11 @@ cargo run
 - [Amazon Dynamodb Docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.html)
 - [Amazon Dynamodb Examples](https://github.com/awsdocs/aws-doc-sdk-examples/tree/main/rustv1/examples/dynamodb#code-examples)
 
+### IAM Resources
+- [IAM Crate](https://docs.rs/aws-iam/latest/aws_iam/)
+- [IAM SDK Code Examples](https://docs.aws.amazon.com/IAM/latest/UserGuide/service_code_examples_iam.html)
+- [AWS-SDK-IAM Client docs](https://docs.rs/aws-sdk-iam/latest/aws_sdk_iam/client/struct.Client.html)
+- [Creating Read only and read-write users IAM AWS SDK](https://docs.aws.amazon.com/IAM/latest/UserGuide/iam_example_iam_Scenario_UserPolicies_section.html)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
