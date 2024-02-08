@@ -12,7 +12,7 @@ show_streams(client: &Client) -> Result<(), Error> {
 }
 
 pub async fn
-start_firehose() -> Result<Client, Error> {
+create_client() -> Result<Client, Error> {
     let config = aws_config::load_from_env().await;
     let client = aws_sdk_firehose::Client::new(&config);
     Ok(client)

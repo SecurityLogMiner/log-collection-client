@@ -39,6 +39,7 @@ pub struct Config {
 pub struct Config {
     pub log_paths: Vec<String>,
     pub dynamo_table_name: String, 
+    pub delivery_stream: String, 
 }
 
 /*
@@ -88,6 +89,7 @@ set_configuration(list: Vec<String>) -> Config {
     let mut config = Config {
         log_paths: Vec::new(),
         dynamo_table_name: String::from(""),
+        delivery_stream: String::from(""),
     };
 
     // TODO: clean this up somehow. just make it work for now.
@@ -112,6 +114,7 @@ set_configuration(list: Vec<String>) -> Config {
                 drop(paths);
             }
             "dynamo_table_name" => config.dynamo_table_name = setting[1].to_string(),
+            "delivery_stream" => config.delivery_stream = setting[1].to_string(),
             _ => continue
         }
     }   

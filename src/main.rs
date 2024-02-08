@@ -1,10 +1,13 @@
+mod traits;
 mod config;
 mod producer;
+mod firehosesdk;
 mod dynamosdk;
 
 use producer::start_log_stream;
 use config::read_config;
 use std::{env, process};
+
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -16,18 +19,18 @@ async fn main() -> Result<(), std::io::Error> {
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-                    let _ = start_log_stream(config.log_paths.clone()).await;
+                    // the default might end up being to a custom http endpoint.
+                    todo!();
                 }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {
                         print_help();
                     }
                     let destination = args[1].as_str();
-                    println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
                             // get the client
-                            let dynamoclient = dynamosdk::start_dynamodb().await;
+                            let dynamoclient = dynamosdk::create_client().await;
                             match dynamoclient {
                                 Ok(client) => {
                                     // check if the table listed in the configuration file
@@ -42,7 +45,8 @@ async fn main() -> Result<(), std::io::Error> {
                                         if tbl == config.dynamo_table_name {
                                             println!("found {tbl:?}");
                                             // use the table
-                                            let _ = start_log_stream(config.log_paths.clone()).await;
+                                            let _ = start_log_stream(config.log_paths.clone(),
+                                                        &client).await;
                                         }
                                     } 
                                     if let Ok(table) = dynamosdk::create_table(&client,
@@ -54,8 +58,25 @@ async fn main() -> Result<(), std::io::Error> {
                                 Err(_) => todo!(),
                             }
                         }
+                        "opensearch" => {
+                            let client = firehosesdk::create_client().await;
+                            match client {
+                                Ok(c) => {
+                                    let stream_list = c.list_delivery_streams().send().await;
+                                    if let Ok(stream) = stream_list {
+                                        for name in stream.delivery_stream_names {
+                                            if name == config.delivery_stream {
+                                                println!("Using OpenSearch delivery stream: {name}");
+                                            }
+                                        }
+                                    }
+                                },
+                                Err(_) => eprintln!("handle opensearch client error")
+                            }
+                        }
                         "elastic" => {
                             todo!();
+                            //KDS-OPS-UMQ2c
                         }
                         _ => {
                             print_help();
@@ -78,3 +99,4 @@ fn print_help() {
     println!("  elastic (todo)  Send logs to Elastic");
     process::exit(0);
 }
+
