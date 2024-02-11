@@ -1,3 +1,1 @@
-[test-user]
-aws_access_key_id = AKIATBRHKQN2ZOTABY4Q
-aws_secret_access_key = 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
+
