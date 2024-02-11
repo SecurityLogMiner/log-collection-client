@@ -19,9 +19,6 @@ pub fn show_dynamodb_tables() -> Result<(), Error> {
     Ok(())
 }
 
-// Check permissions for the newly created client
-// Use the client struct
-// Look into dynamo struct and config return functionality to find out the policies needed
 pub async fn
 start_dynamodb() -> Result<Client, Error> {
     let config = aws_config::load_from_env().await;

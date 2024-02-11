@@ -1,10 +1,10 @@
-use aws_sdk_iam::operation::get_user::{GetUserError, GetUserOutput};
 use aws_sdk_iam::{Client, Error};
 use aws_sdk_iam::operation::{
-    list_users::*, list_groups_for_user::*,
+    attach_role_policy::*, create_access_key::*, create_role::*, create_service_linked_role::*,
+    delete_user::*, delete_user_policy::*, get_account_password_policy::*, get_role::*,
+    list_attached_role_policies::*, list_groups::*, list_policies::*, list_role_policies::*,
+    list_roles::*, list_saml_providers::*, list_users::*,
 };
-// use aws_sdk_iam::model::{ListUserPoliciesInput, ListUserPoliciesOutput};
-
 use aws_sdk_iam::error::SdkError;
 use tokio::time::{sleep, Duration};
 use aws_sdk_iam::types::{AccessKey, Policy, PolicyScopeType, Role, User};
@@ -13,6 +13,20 @@ use aws_sdk_iam::types::{AccessKey, Policy, PolicyScopeType, Role, User};
 // #[::tokio::main]
 
 
+/*
+    Goals:
+    -[] Assign minimal permission policies based on need
+    -[] Assign minimal permission policies based on all
+    -[] List policies 
+    -[] Detach policies
+        Maybe the logistics can be better managed on the AWS rather than CMND line. 
+        Should we still offer the option?
+    -[] Create a specifc customer role on AWS IAM
+        - contains minimal permissions
+    -[] 
+
+
+]*/
 pub async fn
 start_iam() -> Result<Client, Error> {
     let config = aws_config::load_from_env().await;
@@ -20,6 +34,16 @@ start_iam() -> Result<Client, Error> {
     Ok(client)
 }
 
+pub async fn create_user(client: &Client, user_name: &str) -> Result<User, Error> {
+    let response = client.create_user().user_name(user_name).send().await?;
+
+    Ok(response.user.unwrap())
+}
+
+
+/*
+    Requires IAM policy ListUsers
+ */
 pub async fn list_users(
     client: &Client,
     path_prefix: Option<String>,
@@ -36,51 +60,30 @@ pub async fn list_users(
     Ok(response)
 }
 
-pub async fn list_groups_for_user(
-    client: &Client,
-    user_name: String,
-    marker: Option<String>,
-) -> Result<ListGroupsForUserOutput, SdkError<ListGroupsForUserError>> {
-    let response = client
-        .list_groups_for_user()
-        .set_user_name(Some(user_name))
-        .set_marker(marker)
-        .send()
-        .await?;
-    Ok(response)
-}
+pub async fn delete_user(client: &Client, user: &User) -> Result<(), SdkError<DeleteUserError>> {
+    let user = user.clone();
+    let mut tries: i32 = 0;
+    let max_tries: i32 = 10;
 
-
-pub async fn is_admin_user(user: &User, iam_client: &Client) -> bool {
-    let user_name = user.user_name.clone(); 
-
-    // Check if the user belongs to the admin group
-    let result = list_groups_for_user(iam_client, user_name.clone(), None).await;
-    println!("Result: {:?}", result);
-    match result {
-        Ok(output) => {
-            println!("User groups:");
-            for group in &output.groups {
-                let group_name = &group.group_name;
-                    println!("{}", group_name);
-                    if group_name == "admin" {
-                        return true;
-                    }
-                
+    let response: Result<(), SdkError<DeleteUserError>> = loop {
+        match client
+            .delete_user()
+            .user_name(user.user_name())
+            .send()
+            .await
+        {
+            Ok(_) => {
+                break Ok(());
             }
-            false // Return false if the user is not in the admin group
-        },
-        Err(err) => {
-            eprintln!("Error occurred while checking user groups: {:?}", err);
-            false // Return false if an error occurs
+            Err(e) => {
+                tries += 1;
+                if tries > max_tries {
+                    break Err(e);
+                }
+                sleep(Duration::from_secs(2)).await;
+            }
         }
-    }
-}
+    };
 
-
-pub async fn get_user(
-    client: &Client,
-) -> Result<GetUserOutput, SdkError<GetUserError>> {
-    let response: GetUserOutput = client.get_user().send().await?;
-    Ok(response)
+    response
 }

@@ -8,7 +8,8 @@ mod iam;
 use aws_config::imds::Client;
 use producer::start_log_stream;
 use config::read_config;
-use std::env;
+use std::{env, process};
+use util::{print_help, send_logs_to_all_destinations};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -44,16 +45,6 @@ async fn main() -> Result<(), std::io::Error> {
                         }
                         "iam" => {
                             util::initialize_iam(config).await;
-                            // let output = Command::new("aws")
-                            //     .args(&["iam", "list-users"])
-                            //     .output()
-                            //     .expect("Failed to execute command");
-
-                            // println!("IAM Policies: {}", String::from_utf8_lossy(&output.stdout));
-                        }
-                        "run-admin" => {
-                            // util::initialize_iam(config).await;
-                            util::run_admin_cli().await;
                         }
 
                         _ => {
