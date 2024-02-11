@@ -8,10 +8,8 @@ use producer::start_log_stream;
 use config::read_config;
 use std::{env, process};
 
-
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-
     let args: Vec<String> = env::args().collect();
 
     if args.len() <= 2 {
@@ -42,10 +40,10 @@ async fn main() -> Result<(), std::io::Error> {
                                                         .send(); 
                                     let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
                                     for tbl in table_names {
-                                        if tbl == config.dynamo_table_name {
+                                        if tbl == config.dynamodb.table {
                                             println!("found {tbl:?}");
                                             // use the table
-                                            let _ = start_log_stream(config.log_paths.clone(),
+                                            let _ = start_log_stream(config.sources.logs.clone(),
                                                         &client).await;
                                         }
                                     } 
@@ -65,7 +63,7 @@ async fn main() -> Result<(), std::io::Error> {
                                     let stream_list = c.list_delivery_streams().send().await;
                                     if let Ok(stream) = stream_list {
                                         for name in stream.delivery_stream_names {
-                                            if name == config.delivery_stream {
+                                            if name == config.opensearch.delivery_stream {
                                                 println!("Using OpenSearch delivery stream: {name}");
                                             }
                                         }

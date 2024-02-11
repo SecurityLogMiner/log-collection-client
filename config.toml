@@ -1,0 +1,9 @@
+# configuration for log collection
+[dynamodb]
+table = "eptesttable"
+
+[opensearch]
+delivery_stream = "KDS-OPS-UMQ2c"
+
+[sources]
+logs = ["test1.log", "test2.log","/var/log/logminer/logs/crontest.log"]

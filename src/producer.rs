@@ -101,13 +101,9 @@ start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
 
     for input_log_file in paths.clone().into_iter() {
         log_count += 1;
-        let client_copy = client.clone_self();
-        clients.push(client_copy);
-        /*
         if let Ok(client) = dynamosdk::create_client().await {
             clients.push(client);
         }
-        */
 
         let (sender, receiver) = channel();
         senders.push(sender);
@@ -120,9 +116,9 @@ start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
         });
     }
 
-    //let iter = zip(receivers.into_iter(), clients);
-    //for (receiver, client) in iter {
-    for receiver in receivers.into_iter() {
+    let iter = zip(receivers.into_iter(), clients);
+    for (receiver, client) in iter {
+    //for receiver in receivers.into_iter() {
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
