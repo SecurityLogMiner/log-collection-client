@@ -28,8 +28,8 @@ commit.sh
 # Not ready for windows development
 *.exe
 
-# template config file
-default.toml
+# config file
+config.toml
 
 # test logs
 *.log
