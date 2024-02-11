@@ -4,9 +4,14 @@ use aws_sdk_dynamodb::client;
 use crate::config::Config;
 use crate::producer::start_log_stream;
 use crate::dynamosdk; // Import other modules as needed
-use std::{env, process};
+use std::process;
+use std::fmt;
 use crate::iam;
 use aws_sdk_iam::types::User;
+use std::{env, process::Command};
+use std::io::{self, Write};
+pub struct UserDisplay<'a>(pub &'a aws_sdk_iam::types::User);
+
 
 pub async fn send_logs_to_all_destinations(config: Config) {
     // Call the functions to send logs to all destinations
@@ -23,10 +28,21 @@ pub async fn print_help() {
     println!("  kdf            Send logs to Kinesis Firehose");
     println!("  s3             Send logs to S3 bucket");
     println!("  iam            Test iam features");
+    println!("  run-admin      Connecto to the Administrator AWS CLI");
     println!("  elastic        Send logs to Elastic");
     process::exit(0);
 }
 
+
+impl<'a> fmt::Display for UserDisplay<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let user: &User = self.0;
+        write!(f,
+            "Username: {}\nUser ID: {}\nARN: {}\nPermission Boundaries: {:?}\n",
+            user.user_name, user.user_id, user.arn, user.permissions_boundary)
+        
+    }    
+}
 
 /*
     What I'm thinking the purpose of this function could be is to create a new user
@@ -53,44 +69,56 @@ pub async fn print_help() {
 
     In this case, users will simply receive the policies based on the resouces they need.
 */
+
+
+/*
+    Grant the user groups.
+        Group policy or roles
+    List the groups and assign least-privilege permissions to the user.
+
+    If the user wants to send to all; check if they have the necessary policies and then throw an error
+    They need to contact the admin to add that policy
+
+        User supplies a list of source logs
+            Create a table for each source logs
+        Open search should be able to find this.
+            opensearch and dynmo
+    
+    Dynamo priveleges:
+        Dynamo needs to create a table;
+        Write to a table
+    
+    Dashboard would be using admin privielges to read and display content.
+
+    Check the credentials file and read IAM string and check if that user exists.
+    Start the dynamoDB client;
+        Check the privileges
+
+*/
 pub async fn initialize_iam(config:Config){
 
     let iam_client = iam::start_iam().await;
     println!("{:?}",&config);
     match iam_client {
         Ok(client) => {
-            
-            // Create a test user named "testuser"
-            let testuser = "testuser";
-            println!("\nStarted the IAM client\nCreating user: testuser");
-            let created_user = iam::create_user(&client, testuser).await.unwrap();
-
+            // Check if the user exists
             // List all the current users; must require IAM policy
-            println!("Listing all current users along with added testuser");
+            // Currently endpoint users are able to list this out along with admins but this is not advisable. 
+            // I'm sure there is a policy on iam to have them list only thier own credentials and users
+            println!("\nListing all current users");
             let users = iam::list_users(&client, None, None, None)
             .await
             .unwrap();
             for user in users.users {
                 println!("{}", user.user_name);
             }
-
-            // Delete the test user
-            println!("\nDeleting user: testuser");
-            match iam::delete_user(&client, &created_user).await {
-                Ok(_) => {
-                    println!("\nUser 'testuser' deleted successfully\n");
-                }
-                Err(err) => {
-                    eprintln!("Error deleting user 'testuser': {:?}", err);
-                    // Handle the error as needed
-                }
-            }
-            println!("Current users after testuser deletion:");
-            let users = iam::list_users(&client, None, None, None)
-            .await
-            .unwrap();
-            for user in users.users {
-                println!("{}", user.user_name);
+            
+            if let Ok(user) = iam::get_user(&client).await {
+                println!("\nCurrent User:");
+                println!("{}", UserDisplay(user.user.as_ref().unwrap()));            
+            } 
+            else {
+                eprintln!("Failed to get the user. Please check your network connection and IAM permissions, and try again.");
             }
         }
                
@@ -98,8 +126,70 @@ pub async fn initialize_iam(config:Config){
                 println!("Error occurred starting IAM client: {}", err);
             }
     }
+    
 }
 
+
+/// Asynchronously runs the Administrator AWS CLI if the user is an admin
+pub async fn run_admin_cli(){
+    // Check if the user is an admin
+
+    // Get the current user
+    let iam_client = iam::start_iam().await;
+    match iam_client {
+        Ok(client) => {
+            let user = iam::get_user(&client).await.unwrap();
+            if iam::is_admin_user(&user.user.as_ref().unwrap(), &client).await {
+                // Set up standard input and output
+                let stdin = io::stdin();
+                let mut stdout = io::stdout();
+        
+                // Print a message indicating the start of the Administrator AWS CLI
+                println!("\nRunning Administrator AWS CLI:");
+                // Start a loop to continuously receive and process user input
+                loop {
+                    // Prompt the user for input
+                    print!("aws> ");
+                    // Ensure the prompt is displayed immediately by flushing the output
+                    stdout.flush().unwrap();
+        
+                    // Read user input from the standard input
+                    let mut input = String::new();
+                    stdin.read_line(&mut input).unwrap();
+        
+                    // Check if the user wants to exit the CLI
+                    if input.trim().eq_ignore_ascii_case("exit") {
+                        break;
+                    }
+        
+                    // Split the input into individual arguments
+                    let args: Vec<&str> = input.trim().split_whitespace().collect();
+                    // If there are no arguments, continue to the next iteration of the loop
+                    if args.is_empty() {
+                        continue;
+                    }
+        
+                    // Execute the AWS CLI command with the provided arguments
+                    let output = Command::new("aws")
+                        .args(&args)
+                        .output()
+                        .expect("Failed to execute command");
+        
+                    // Write the command output to the standard output and standard error
+                    io::stdout().write_all(&output.stdout).unwrap();
+                    io::stderr().write_all(&output.stderr).unwrap();
+                } 
+            }
+            else{
+                println!("\n{} is not an admininstrator!", user.user.as_ref().unwrap().user_name);
+                println!("Please contact the admininistrator for more information.");
+            }
+        }
+        Err(err) => {
+            println!("Error occurred starting IAM client: {}", err);
+        }
+    }
+}
 
 
 pub async fn send_dynamodb(config: Config) {
