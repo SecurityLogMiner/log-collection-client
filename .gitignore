@@ -41,3 +41,6 @@ client.crt
 client.csr
 client.key
 iamkeys.csv
+
+# test-user credentials
+testuser-cred.txt
