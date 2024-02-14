@@ -4,6 +4,7 @@ use aws_sdk_dynamodb::primitives::Blob;
 use aws_sdk_dynamodb::{config::Region, meta::PKG_VERSION, Client, Error};
 use aws_sdk_dynamodb::operation::create_table::{CreateTableOutput,CreateTableError};
 use aws_sdk_dynamodb::error::{BuildError};
+use crate::config::Config;
 use aws_sdk_dynamodb::types::{
     AttributeDefinition, KeySchemaElement, KeyType, ProvisionedThroughput, ScalarAttributeType,
 };
@@ -69,3 +70,33 @@ pub async fn create_table(
         }
     }
 }
+
+pub async fn send_dynamodb(config: Config) {
+    // Call the function to create DynamoDB table
+    let dynamoclient = start_dynamodb().await;
+    match dynamoclient {
+        Ok(client) => {
+            // check if the table listed in the configuration file
+            // exists. If it does not, create it. 
+            println!("{:?}",&config);
+            let tables = client.list_tables()
+                                .into_paginator()
+                                .items()
+                                .send(); 
+            let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
+            for tbl in table_names {
+                if tbl == config.dynamo_table_name {
+                    println!("found {tbl:?}");
+                    // use the table
+                    let _ = start_log_stream(config.log_paths.clone()).await;
+                }
+            } 
+            if let Ok(table) = dynamosdk::create_table(&client,
+                                    "default_table",
+                                    "default_key").await {
+                println!("{table:?}");
+            }
+        },
+        Err(_) => todo!(),
+    }
+    }
