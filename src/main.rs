@@ -45,7 +45,10 @@ async fn main() -> Result<(), std::io::Error> {
                         "iam" => {
                             util::initialize_iam(config).await;
                         }
-
+                        "run-admin" => {
+                            // util::initialize_iam(config).await;
+                            util::run_admin_cli().await;
+                        }
                         _ => {
                             util::print_help().await;
                         }
