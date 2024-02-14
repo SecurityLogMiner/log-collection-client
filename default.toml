@@ -1,0 +1,9 @@
+# configuration for log collection
+[dynamodb]
+table = "yourtesttable"
+
+[opensearch]
+delivery_stream = "yourdeliverystream"
+
+[sources]
+logs = ["paths","to","logs"]

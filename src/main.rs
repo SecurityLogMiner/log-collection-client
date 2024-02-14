@@ -1,3 +1,4 @@
+mod traits;
 mod config;
 mod producer;
 mod firehosesdk;
@@ -13,12 +14,10 @@ use util::{print_help, send_logs_to_all_destinations};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-
     let args: Vec<String> = env::args().collect();
 
     if args.len() <= 2 {
         let config_data = read_config();
-
 
         match config_data {
             Some(config) => {
@@ -27,8 +26,8 @@ async fn main() -> Result<(), std::io::Error> {
                 //Create a setup functoin 
                 // User gives IAM credentials; as long as they have correct policies; based on the policies set up on whatever they have available.
                 // Attach policies to IAM user based on the set up function
-                    let _ = start_log_stream(config.log_paths.clone()).await;
-                }
+                    todo!();
+            }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {
                         util::print_help().await;
@@ -38,7 +37,7 @@ async fn main() -> Result<(), std::io::Error> {
                     println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
-                            util::send_dynamodb(config).await;
+                            dynamosdk::send_dynamodb(config).await;
                         }
                         "elastic" => {
                             todo!();

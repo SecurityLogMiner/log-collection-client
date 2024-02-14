@@ -1,10 +1,15 @@
+use crate::producer;
+use producer::start_log_stream;
+
+
 use aws_config::meta::region::RegionProviderChain;
 use aws_sdk_dynamodb::error::SdkError;
 use aws_sdk_dynamodb::primitives::Blob;
 use aws_sdk_dynamodb::{config::Region, meta::PKG_VERSION, Client, Error};
 use aws_sdk_dynamodb::operation::create_table::{CreateTableOutput,CreateTableError};
-use aws_sdk_dynamodb::error::{BuildError};
 use crate::config::Config;
+use aws_sdk_dynamodb::error::{BuildError};
+
 use aws_sdk_dynamodb::types::{
     AttributeDefinition, KeySchemaElement, KeyType, ProvisionedThroughput, ScalarAttributeType,
 };
@@ -85,13 +90,14 @@ pub async fn send_dynamodb(config: Config) {
                                 .send(); 
             let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
             for tbl in table_names {
-                if tbl == config.dynamo_table_name {
+                if tbl == config.dynamodb.table {
                     println!("found {tbl:?}");
                     // use the table
-                    let _ = start_log_stream(config.log_paths.clone()).await;
+                    let _ = start_log_stream(config.sources.logs.clone(),
+                        &client).await;
                 }
-            } 
-            if let Ok(table) = dynamosdk::create_table(&client,
+            }
+            if let Ok(table) = create_table(&client,
                                     "default_table",
                                     "default_key").await {
                 println!("{table:?}");

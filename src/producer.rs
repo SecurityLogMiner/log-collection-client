@@ -6,35 +6,63 @@ use std::fs::{File,OpenOptions};
 use std::iter::zip;
 use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
-use std::sync::mpsc::{channel,Sender,Receiver};
+use std::sync::{Arc, mpsc::{channel,Sender,Receiver}};
 use uuid::Uuid;
 use crate::config::{Config};
 use crate::dynamosdk;
+use crate::firehosesdk;
+use crate::traits::DataHandler;
 use aws_sdk_dynamodb::Client as DynamodbClient;
-
-#[derive(Debug, Clone)]
-pub struct DataBuffer {
-    name: String,
-}
-
-// The trait and impl will need to move to the dynamosdk module. 
+use aws_sdk_dynamodb::types::AttributeValue;
+use aws_sdk_firehose::Client as OpenSearchClient;
+/*
 #[async_trait]
-trait TestDynamo {
-    fn show(&self) -> String;
-    async fn handle_log_data(&self,log_channel: Receiver<String>);
-}
-#[async_trait]
-impl TestDynamo for DynamodbClient {
+impl DataHandler for DynamodbClient {
     fn show(&self) -> String {
-        format!("{self:?}")
+        format!("DynamodbClient: {:?}", &self)
     }
-
+    fn create(&self) 
     async fn handle_log_data(&self, log_channel: Receiver<String>) {
-        for log_line in log_channel {
-            println!("{log_line}");
+        if let Ok(table) = self.describe_table().table_name("eptesttable").send().await {
+            for log_line in log_channel {
+                println!("{log_line}");
+                let res = self.put_item()
+                    .table_name("eptesttable")
+                    .item("epkeyitem",AttributeValue::S(log_line))
+                    .send().await;
+                // dumb error checking for now. eventually, this will need to be 
+                // sent to the status api for the user.
+                //println!("{res:?}");
+            }
         }
     }
 }
+*/
+
+//#[async_trait]
+//impl DataHandler for OpenSearchClient {
+//    fn show(&self) -> String {
+//        format!("OpenSearchClient: {:?}", &self)
+//    }
+//    async fn create(&self) -> Result<OpenSearchClient, std::io::Error> {}
+//    async fn handle_log_data(&self, log_channel: Receiver<String>) {
+//        /*
+//        if let Ok(table) = self.describe_table().table_name("eptesttable").send().await {
+//            for log_line in log_channel {
+//                println!("{log_line}");
+//                let res = self.put_item()
+//                    .table_name("eptesttable")
+//                    .item("epkeyitem",AttributeValue::S(log_line))
+//                    .send().await;
+//                // dumb error checking for now. eventually, this will need to be 
+//                // sent to the status api for the user.
+//                //println!("{res:?}");
+//            }
+//        }
+//        */
+//    }
+//}
+
 
 fn 
 tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
@@ -56,28 +84,8 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn create_data_buffer() -> Result<DataBuffer> {
-    let uuid = Uuid::new_v4();
-    let _ = File::create(uuid.to_string())?;
-    let mut bf = DataBuffer {
-        name: uuid.to_string(),
-    };
-    Ok(bf)
-}
-
-pub fn destroy_data_buffer(name: String) -> Result<()> {
-    std::fs::remove_file(name)?;
-    Ok(())
-}
-
-
-pub fn insert_into_buffer(mut bf: File, data: &str) -> Result<()> {
-    bf.write_all(b"some data should be in amihere.txt")?;
-    Ok(())
-}
-
 pub async fn 
-start_log_stream(paths: Vec<String>) -> Result<()> {
+start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
     let (tx,rx) = channel();
     ctrlc::set_handler(move || {
         println!("handle ctrlc signal");
@@ -89,9 +97,11 @@ start_log_stream(paths: Vec<String>) -> Result<()> {
     let mut clients = Vec::<_>::new();
     let mut log_count = 0;
 
+    println!("{:?}",client.show());
+
     for input_log_file in paths.clone().into_iter() {
         log_count += 1;
-        if let Ok(client) = dynamosdk::start_dynamodb().await {
+        if let Ok(client) = dynamosdk::create_client().await {
             clients.push(client);
         }
 
@@ -106,10 +116,9 @@ start_log_stream(paths: Vec<String>) -> Result<()> {
         });
     }
 
-    //let iter = zip(receivers.into_iter(), zip(clients, buffers.clone()));
     let iter = zip(receivers.into_iter(), clients);
     for (receiver, client) in iter {
-        //let (client, buffer) = client_buffer;
+    //for receiver in receivers.into_iter() {
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
                 tokio_handle.block_on(async {
