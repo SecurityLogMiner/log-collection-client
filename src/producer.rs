@@ -10,59 +10,9 @@ use std::sync::{Arc, mpsc::{channel,Sender,Receiver}};
 use uuid::Uuid;
 use crate::config::{Config};
 use crate::dynamosdk;
-use crate::firehosesdk;
 use crate::traits::DataHandler;
 use aws_sdk_dynamodb::Client as DynamodbClient;
 use aws_sdk_dynamodb::types::AttributeValue;
-use aws_sdk_firehose::Client as OpenSearchClient;
-/*
-#[async_trait]
-impl DataHandler for DynamodbClient {
-    fn show(&self) -> String {
-        format!("DynamodbClient: {:?}", &self)
-    }
-    fn create(&self) 
-    async fn handle_log_data(&self, log_channel: Receiver<String>) {
-        if let Ok(table) = self.describe_table().table_name("eptesttable").send().await {
-            for log_line in log_channel {
-                println!("{log_line}");
-                let res = self.put_item()
-                    .table_name("eptesttable")
-                    .item("epkeyitem",AttributeValue::S(log_line))
-                    .send().await;
-                // dumb error checking for now. eventually, this will need to be 
-                // sent to the status api for the user.
-                //println!("{res:?}");
-            }
-        }
-    }
-}
-*/
-
-//#[async_trait]
-//impl DataHandler for OpenSearchClient {
-//    fn show(&self) -> String {
-//        format!("OpenSearchClient: {:?}", &self)
-//    }
-//    async fn create(&self) -> Result<OpenSearchClient, std::io::Error> {}
-//    async fn handle_log_data(&self, log_channel: Receiver<String>) {
-//        /*
-//        if let Ok(table) = self.describe_table().table_name("eptesttable").send().await {
-//            for log_line in log_channel {
-//                println!("{log_line}");
-//                let res = self.put_item()
-//                    .table_name("eptesttable")
-//                    .item("epkeyitem",AttributeValue::S(log_line))
-//                    .send().await;
-//                // dumb error checking for now. eventually, this will need to be 
-//                // sent to the status api for the user.
-//                //println!("{res:?}");
-//            }
-//        }
-//        */
-//    }
-//}
-
 
 fn 
 tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {

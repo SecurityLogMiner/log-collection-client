@@ -1,7 +1,6 @@
 mod traits;
 mod config;
 mod producer;
-mod firehosesdk;
 mod dynamosdk;
 mod util;
 mod iam;

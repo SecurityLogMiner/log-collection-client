@@ -126,4 +126,4 @@ pub async fn send_dynamodb(config: Config) {
         },
         Err(_) => todo!(),
     }
-    }
+}
