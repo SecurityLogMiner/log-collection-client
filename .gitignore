@@ -28,8 +28,8 @@ commit.sh
 # Not ready for windows development
 *.exe
 
-# test config file
-test.config
+# config file
+config.toml
 
 # test logs
 *.log

@@ -4,7 +4,22 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aws-config = { version= "1.1.1", features = ["behavior-version-latest"] }
+aws-config = { version= "1.1.4", features = ["behavior-version-latest"] }
 tokio = { version = "1", features = ["full"] }
-aws-sdk-firehose = "1.10.0"
-aws-sdk-kinesis = "1.10.0"
+aws-sdk-firehose = "1.13.0"
+ctrlc = "3.4.2"
+aws-sdk-dynamodb = "1.13.0"
+aws-sdk-iam = "1.12.0"
+clap = { version = "4.4.18", features = ["derive"] }
+async-trait = "0.1.77"
+toml = "0.8.10"
+serde = "1.0.196"
+serde_derive = "1.0.196"
+
+[dependencies.uuid]
+version = "1.7.0"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+]
