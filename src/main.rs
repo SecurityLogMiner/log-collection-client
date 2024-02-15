@@ -3,10 +3,14 @@ mod config;
 mod producer;
 mod firehosesdk;
 mod dynamosdk;
+mod util;
+mod iam;
 
+use aws_config::imds::Client;
 use producer::start_log_stream;
 use config::read_config;
 use std::{env, process};
+use util::{print_help, send_logs_to_all_destinations};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -14,70 +18,39 @@ async fn main() -> Result<(), std::io::Error> {
 
     if args.len() <= 2 {
         let config_data = read_config();
+
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-                    // the default might end up being to a custom http endpoint.
+
+                //Create a setup functoin 
+                // User gives IAM credentials; as long as they have correct policies; based on the policies set up on whatever they have available.
+                // Attach policies to IAM user based on the set up function
                     todo!();
-                }
+            }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {
-                        print_help();
+                        util::print_help().await;
                     }
+
                     let destination = args[1].as_str();
+                    println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
-                            // get the client
-                            let dynamoclient = dynamosdk::create_client().await;
-                            match dynamoclient {
-                                Ok(client) => {
-                                    // check if the table listed in the configuration file
-                                    // exists. If it does not, create it. 
-                                    println!("{:?}",&config);
-                                    let tables = client.list_tables()
-                                                        .into_paginator()
-                                                        .items()
-                                                        .send(); 
-                                    let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
-                                    for tbl in table_names {
-                                        if tbl == config.dynamodb.table {
-                                            println!("found {tbl:?}");
-                                            // use the table
-                                            let _ = start_log_stream(config.sources.logs.clone(),
-                                                        &client).await;
-                                        }
-                                    } 
-                                    if let Ok(table) = dynamosdk::create_table(&client,
-                                                            "default_table",
-                                                            "default_key").await {
-                                        println!("{table:?}");
-                                    }
-                                },
-                                Err(_) => todo!(),
-                            }
-                        }
-                        "opensearch" => {
-                            let client = firehosesdk::create_client().await;
-                            match client {
-                                Ok(c) => {
-                                    let stream_list = c.list_delivery_streams().send().await;
-                                    if let Ok(stream) = stream_list {
-                                        for name in stream.delivery_stream_names {
-                                            if name == config.opensearch.delivery_stream {
-                                                println!("Using OpenSearch delivery stream: {name}");
-                                            }
-                                        }
-                                    }
-                                },
-                                Err(_) => eprintln!("handle opensearch client error")
-                            }
+                            dynamosdk::send_dynamodb(config).await;
                         }
                         "elastic" => {
                             todo!();
-                            //KDS-OPS-UMQ2c
+                        }
+                        "iam" => {
+                            util::initialize_iam(config).await;
+                        }
+                        "run-admin" => {
+                            // util::initialize_iam(config).await;
+                            util::run_admin_cli().await;
                         }
                         _ => {
-                            print_help();
+                            util::print_help().await;
                         }
                     }
                 }
@@ -87,14 +60,5 @@ async fn main() -> Result<(), std::io::Error> {
     } 
 
     Ok(())
-}
-
-fn print_help() {
-    println!("Usage: cargo run -- <destination>");
-    println!("Available Destinations:");
-    println!("  dynamodb        Create DynamoDB table");
-    println!("  opensearch      Create DynamoDB table");
-    println!("  elastic (todo)  Send logs to Elastic");
-    process::exit(0);
 }
 

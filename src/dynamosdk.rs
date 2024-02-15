@@ -5,6 +5,7 @@ use aws_sdk_dynamodb::{config::Region, meta::PKG_VERSION, Error};
 use aws_sdk_dynamodb::operation::create_table::{CreateTableOutput,CreateTableError};
 use aws_sdk_dynamodb::operation::put_item::{PutItemOutput, PutItemError};
 use aws_sdk_dynamodb::error::{BuildError};
+
 use aws_sdk_dynamodb::types::{
     AttributeDefinition, KeySchemaElement, KeyType, ProvisionedThroughput, ScalarAttributeType,
 };
@@ -12,6 +13,8 @@ use async_trait::async_trait;
 use std::sync::mpsc::{Receiver};
 use crate::dynamosdk;
 use crate::traits::DataHandler;
+use crate::config::Config;
+use crate::producer::start_log_stream;
 use aws_sdk_dynamodb::Client as DynamodbClient;
 use aws_sdk_dynamodb::types::AttributeValue;
 
@@ -95,3 +98,32 @@ pub async fn create_table(
     }
 }
 
+pub async fn send_dynamodb(config: Config) {
+    let dynamoclient = dynamosdk::create_client().await;
+    match dynamoclient {
+        Ok(client) => {
+            // check if the table listed in the configuration file
+            // exists. If it does not, create it. 
+            println!("{:?}",&config);
+            let tables = client.list_tables()
+                                .into_paginator()
+                                .items()
+                                .send(); 
+            let table_names = tables.collect::<Result<Vec<_>,_>>().await.unwrap();
+            for tbl in table_names {
+                if tbl == config.dynamodb.table {
+                    println!("found {tbl:?}");
+                    // use the table
+                    let _ = start_log_stream(config.sources.logs.clone(),
+                                &client).await;
+                }
+            } 
+            if let Ok(table) = dynamosdk::create_table(&client,
+                                    "default_table",
+                                    "default_key").await {
+                println!("{table:?}");
+            }
+        },
+        Err(_) => todo!(),
+    }
+    }
