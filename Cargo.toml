@@ -15,6 +15,8 @@ async-trait = "0.1.77"
 toml = "0.8.10"
 serde = "1.0.196"
 serde_derive = "1.0.196"
+crossterm = "0.27.0"
+ratatui = { version = "0.26.0", features = ["all-widgets"] }
 
 [dependencies.uuid]
 version = "1.7.0"

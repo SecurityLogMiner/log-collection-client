@@ -4,6 +4,7 @@ mod producer;
 mod dynamosdk;
 mod util;
 mod iam;
+mod ratatui;
 
 use aws_config::imds::Client;
 use producer::start_log_stream;
@@ -21,7 +22,8 @@ async fn main() -> Result<(), std::io::Error> {
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-                util::print_help().await;
+                ratatui::start_ui()?;
+                // util::print_help().await;
             }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {

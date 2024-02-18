@@ -138,6 +138,8 @@ Run ```cargo run -- --help ``` to output all available destinations.
 - [Creating Read only and read-write users IAM AWS SDK](https://docs.aws.amazon.com/IAM/latest/UserGuide/iam_example_iam_Scenario_UserPolicies_section.html)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Ratatui Resources
+ - [Installation](https://ratatui.rs/installation/)
 ## License
 Apache 2.0
 
