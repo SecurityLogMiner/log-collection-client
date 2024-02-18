@@ -21,11 +21,7 @@ async fn main() -> Result<(), std::io::Error> {
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-
-                //Create a setup functoin 
-                // User gives IAM credentials; as long as they have correct policies; based on the policies set up on whatever they have available.
-                // Attach policies to IAM user based on the set up function
-                    todo!();
+                util::print_help().await;
             }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {

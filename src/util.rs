@@ -1,4 +1,5 @@
 use aws_sdk_dynamodb::client;
+use aws_sdk_dynamodb::operation::query;
 
 // util.rs serves as housing various utility functions that are used in main.rs
 use crate::config::Config;
@@ -44,89 +45,59 @@ impl<'a> fmt::Display for UserDisplay<'a> {
     }    
 }
 
-/*
-    What I'm thinking the purpose of this function could be is to create a new user
-    Assign a specific pre-created role that specifies customers with limited permissions such Read only
-        These would require all the policies needed for using S3, DynamoDB, Firehose, etc..
-        This could be an option where the user requires send to "all"
-
-    Another approach would be if we don't want a user to gain permissions to resources they are not using is to
-    assign each policy to use those resources individually.
-
-    Regardless, an option would be to:
-    1. Create a user for a customer
-    2. Assign roles to user based on needs (or all)
-    3. User uses resources
-    4. Delete the user?
-
-    We could also follow the "Apply least-privilege permissions" scenario listed on AWS:
-        "When you set permissions with IAM policies, grant only the permissions required to perform a task. 
-        You do this by defining the actions that can be taken on specific resources under specific conditions, 
-            also known as least-privilege permissions. 
-        You might start with broad permissions while you explore the permissions that are required for your workload or use case. 
-        As your use case matures, you can work to reduce the permissions that you grant to work toward least privilege. 
-        For more information about using IAM to apply permissions"
-
-    In this case, users will simply receive the policies based on the resouces they need.
-*/
-
-
-/*
-    Grant the user groups.
-        Group policy or roles
-    List the groups and assign least-privilege permissions to the user.
-
-    If the user wants to send to all; check if they have the necessary policies and then throw an error
-    They need to contact the admin to add that policy
-
-        User supplies a list of source logs
-            Create a table for each source logs
-        Open search should be able to find this.
-            opensearch and dynmo
-    
-    Dynamo priveleges:
-        Dynamo needs to create a table;
-        Write to a table
-    
-    Dashboard would be using admin privielges to read and display content.
-
-    Check the credentials file and read IAM string and check if that user exists.
-    Start the dynamoDB client;
-        Check the privileges
-
-*/
-pub async fn initialize_iam(config:Config){
+pub async fn initialize_iam(config: Config) {
+    // Only make this accessible to users with admin privileges!!
 
     let iam_client = iam::start_iam().await;
-    println!("{:?}",&config);
+    println!("{:?}", &config);
     match iam_client {
         Ok(client) => {
-            // Check if the user exists
-            // List all the current users; must require IAM policy
-            // Currently endpoint users are able to list this out along with admins but this is not advisable. 
-            // I'm sure there is a policy on iam to have them list only thier own credentials and users
-            println!("\nListing all current users");
-            let users = iam::list_users(&client, None, None, None)
-            .await
-            .unwrap();
-            for user in users.users {
-                println!("{}", user.user_name);
-            }
-            
-            if let Ok(user) = iam::get_user(&client).await {
-                println!("\nCurrent User:");
-                println!("{}", UserDisplay(user.user.as_ref().unwrap()));            
-            } 
-            else {
-                eprintln!("Failed to get the user. Please check your network connection and IAM permissions, and try again.");
+            let user = iam::get_user(&client).await.unwrap();
+            if iam::is_admin_user(&user.user.as_ref().unwrap(), &client).await {
+
+                println!("1. List all current users");
+                println!("2. Get current user");
+                println!("3. Exit");
+                let mut input = String::new();
+                io::stdin().read_line(&mut input).expect("Failed to read line");
+                let choice: u32 = input.trim().parse().expect("Please enter a number");
+
+                match choice {
+                    1 => {
+                        println!("\nListing all current users");
+                        if let Ok(users) = iam::list_users(&client, None, None, None).await {
+                            for user in users.users {
+                                println!("{}", user.user_name);
+                            }
+                        } else {
+                            eprintln!("Failed to list users. Please check your network connection and IAM permissions, and try again.");
+                        }
+                    }
+                    2 => {
+                        if let Ok(user) = iam::get_user(&client).await {
+                            println!("\nCurrent User:");
+                            println!("{}", UserDisplay(user.user.as_ref().unwrap()));
+                        }
+                        else {
+                            eprintln!("Failed to get the user. Please check your network connection and IAM permissions, and try again.");
+                        }
+                    }
+                    3 => {
+                        process::exit(0);
+                    }
+                    _ => {
+                        println!("Invalid choice");
+                    }
+                }
+            } else {
+                println!("\n{} is not an administrator!", user.user.as_ref().unwrap().user_name);
+                println!("Please contact the administrator for more information.");
             }
         }
-               
-            Err(err) => {
-                println!("Error occurred starting IAM client: {}", err);
-            }
+        Err(err) => {
+            println!("Error occurred starting IAM client: {}", err);
+        }
     }
-    
 }
 
 

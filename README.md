@@ -5,7 +5,6 @@
 A service that collects and sends system event data to a server.
 
   <p align="left">
-    A service that collects and sends system event data to a server.
     <br />
     <a href="https://securitylogminer-doc-repo.readthedocs.io/"><strong>Documentation »</strong></a>
     <br />
@@ -13,6 +12,9 @@ A service that collects and sends system event data to a server.
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+    - [Users](##users)
+    - [Administrators](##admins)
+    - [Client Instructions](#client-instructions)
 - [Resources](#resources)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
@@ -31,11 +33,22 @@ Create an AWS account, setup IAM and bucket policies.
 2. Set up Identity and Access Management account (IAM).
     - Note: Be sure to copy down your access and secret access key and save them locally.
 
-3. Set up bucket policies to receive data using Amazon S3.
-    - AmazonKinesisFirehoseFullAccess
-    - AmazonKinesisFullAccess
-    - AmazonS3FullAccess
+## Users
+Log Collection Client users are granted limited access to resources on AWS, adhering to the principle of [least-privilege permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege). This approach ensures that users only receive the permissions necessary to fulfill their specific tasks. Least privilege is a core principle among Amazon Web Services (AWS) Well-Architected best practices, contributing to secure cloud architecture.
 
+By default, users are configured with read-only access and specific write permissions essential for the Log Collection Client's interactions with AWS. This setup aims to strike a balance between functionality and security.
+## Administrators
+Adminstrators are responsible for managing user account and permissions accordingly.
+They have default full access to various AWS resources critical for the client's operation, including:
+- DynamoDB
+- Kinesis Firehose
+- S3 bucket management
+- IAM Permissions
+Administrators are tasked with overseeing the overall system configuration, ensuring that users have the appropriate levels of access to fulfill their responsibilities while upholding security best practices.
+
+Additionally, administrators will have access to the AWS-CLI through the client. Running the command **cargo run -- run-admin** will allow administrators to input commands to the AWS through the client command line. However, it is advised to access and modify permissions on the actual [AWS website.](https://portal.aws.amazon.com).
+
+## Client Instructions
 Clone the client repositories to start.
 - [Client](https://github.com/SecurityLogMiner/log-collection-client)
 
@@ -98,8 +111,17 @@ Running the Client:
 ```
 cd <client_repo_dir>
 cargo install
-cargo run
+cargo run -- -help
 ```
+Running the client through the command line will require the user or administrator to specify a specific destination.
+The available destinations include:
+- DynamoDB
+- Kinesis Firehose
+- S3
+- Identity and Access Management (IAM)
+- Elastic
+
+Run ```cargo run -- --help ``` to output all available destinations.
 
 ## Resources
 - [SDK for Rust](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/using.html)
