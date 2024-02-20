@@ -6,11 +6,12 @@ mod util;
 mod iam;
 mod ratatui;
 
-use aws_config::imds::Client;
-use producer::start_log_stream;
+// use aws_config::imds::Client;
+use ratatui::ratatui_main;
+// use producer::start_log_stream;
 use config::read_config;
-use std::{env, process};
-use util::{print_help, send_logs_to_all_destinations};
+use std::env;
+// use util::{print_help, send_logs_to_all_destinations};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -22,8 +23,18 @@ async fn main() -> Result<(), std::io::Error> {
         match config_data {
             Some(config) => {
                 if args.len() == 1 {
-                ratatui::start_ui()?;
+
+                // ratatui::initialize_panic_handler();
+                // ratatui::start_ui()?;
                 // util::print_help().await;
+                match ratatui_main() {
+                    Ok(_) => (),
+                    Err(e) => {
+                        // Handle the error, e.g. print an error message
+                        eprintln!("Error: {}", e);
+                    }
+                }
+                
             }
                 if args.len() == 2 {
                     if args[1] == "--help" || args[1] == "-h" {

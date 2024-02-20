@@ -9,7 +9,7 @@ use std::process;
 use std::fmt;
 use crate::iam;
 use aws_sdk_iam::types::User;
-use std::{env, process::Command};
+use std::process::Command;
 use std::io::{self, Write};
 pub struct UserDisplay<'a>(pub &'a aws_sdk_iam::types::User);
 
