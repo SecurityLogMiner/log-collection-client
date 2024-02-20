@@ -15,16 +15,18 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     // - https://github.com/ratatui-org/ratatui/tree/master/examples
 
 
-        let list = List::new(app.items.clone())
+    let list = List::new(app.items.items.clone())
         .block(
             Block::default()
-                .borders(Borders::ALL)
-                .title("Log Collection Menu")
-                .title_alignment(Alignment::Center)
-                .border_type(BorderType::Rounded),
+            .borders(Borders::ALL)
+            .title("Log Collection Menu")
+            .title_alignment(Alignment::Center)
+            .border_type(BorderType::Rounded),
         )
         .style(Style::default().fg(Color::Cyan).bg(Color::Black))
         .highlight_style(Style::default().bg(Color::Yellow));
+    
+    // Render the list widget using the frame
     frame.render_stateful_widget(list, frame.size(), &mut app.state);
 
     
