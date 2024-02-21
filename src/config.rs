@@ -4,13 +4,14 @@ use toml;
 use serde_derive::{Deserialize,Serialize};
 
 #[derive(Debug, Deserialize)]
-pub struct Sources {
-    pub logs: Vec<String>,
+pub struct Package {
+    pub source: String,
+    pub table: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct DynamoDBConfig {
-    pub table: String,
+    pub package: Vec<Package>
 }
 
 #[derive(Debug, Deserialize)]
@@ -18,11 +19,10 @@ pub struct OpenSearchConfig {
     pub delivery_stream: String,
 }
 
+// Define a configuration struct above and throw it in the mix
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub dynamodb: DynamoDBConfig,
-    pub opensearch: OpenSearchConfig,
-    pub sources: Sources,
 }
 
 pub fn
@@ -33,4 +33,3 @@ read_config() -> Option<Config> {
     let config: Config = toml::from_str(&data).unwrap();
     Some(config)
 }
-
