@@ -14,14 +14,8 @@ pub struct DynamoDBConfig {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct OpenSearchConfig {
-    pub delivery_stream: String,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct Config {
     pub dynamodb: DynamoDBConfig,
-    pub opensearch: OpenSearchConfig,
     pub sources: Sources,
 }
 

@@ -9,7 +9,7 @@ use aws_config::imds::Client;
 use producer::start_log_stream;
 use config::read_config;
 use std::{env, process};
-use util::{print_help, send_logs_to_all_destinations};
+use util::{print_help};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -36,10 +36,8 @@ async fn main() -> Result<(), std::io::Error> {
                     println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
-                            dynamosdk::send_dynamodb(config).await;
-                        }
-                        "elastic" => {
-                            todo!();
+                            //dynamosdk::send_dynamodb(config).await;
+                            let _ = start_log_stream(config.sources.logs).await;
                         }
                         "iam" => {
                             util::initialize_iam(config).await;

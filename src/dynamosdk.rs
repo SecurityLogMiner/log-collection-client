@@ -98,6 +98,8 @@ pub async fn create_table(
     }
 }
 
+// trash function
+/*
 pub async fn send_dynamodb(config: Config) {
     let dynamoclient = dynamosdk::create_client().await;
     match dynamoclient {
@@ -127,3 +129,4 @@ pub async fn send_dynamodb(config: Config) {
         Err(_) => todo!(),
     }
 }
+*/

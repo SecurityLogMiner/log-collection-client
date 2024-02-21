@@ -35,7 +35,8 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 }
 
 pub async fn 
-start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
+//start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
+start_log_stream(paths: Vec<String>) -> Result<()> {
     let (tx,rx) = channel();
     ctrlc::set_handler(move || {
         println!("handle ctrlc signal");
@@ -47,7 +48,7 @@ start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
     let mut clients = Vec::<_>::new();
     let mut log_count = 0;
 
-    println!("{:?}",client.show());
+    //println!("{:?}",client.show());
 
     for input_log_file in paths.clone().into_iter() {
         log_count += 1;
