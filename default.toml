@@ -1,9 +1,12 @@
 # configuration for log collection
+# https://toml.io/en/v1.0.0#array-of-tables
+
 [dynamodb]
-table = "yourtesttable"
 
-[opensearch]
-delivery_stream = "yourdeliverystream"
+[[dynamodb.package]]
+source = "test1.log"
+table = "test1-table"
 
-[sources]
-logs = ["paths","to","logs"]
+[[dynamodb.package]]
+source = "test2.log"
+table = "test2-table"

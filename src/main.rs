@@ -45,10 +45,8 @@ async fn main() -> Result<(), std::io::Error> {
                     println!("Destination: {}", destination);
                     match destination {
                         "dynamodb" => {
-                            dynamosdk::send_dynamodb(config).await;
-                        }
-                        "elastic" => {
-                            todo!();
+                            //dynamosdk::send_dynamodb(config).await;
+                            let _ = start_log_stream(config.dynamodb).await;
                         }
                         "iam" => {
                             util::initialize_iam(config).await;
