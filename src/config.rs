@@ -4,19 +4,21 @@ use toml;
 use serde_derive::{Deserialize,Serialize};
 
 #[derive(Debug, Deserialize)]
-pub struct Sources {
-    pub logs: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct DynamoDBConfig {
+pub struct Package {
+    pub source: String,
     pub table: String,
 }
 
 #[derive(Debug, Deserialize)]
+pub struct DynamoDBConfig {
+    pub package: Vec<Package>
+}
+
+
+// Define a configuration struct above and throw it in the mix
+#[derive(Debug, Deserialize)]
 pub struct Config {
     pub dynamodb: DynamoDBConfig,
-    pub sources: Sources,
 }
 
 pub fn

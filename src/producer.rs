@@ -8,14 +8,15 @@ use std::io::{BufReader, BufRead, Write, Result};
 use std::thread;
 use std::sync::{Arc, mpsc::{channel,Sender,Receiver}};
 use uuid::Uuid;
-use crate::config::{Config};
+use crate::config::{Config, DynamoDBConfig, Package};
 use crate::dynamosdk;
 use crate::traits::DataHandler;
 use aws_sdk_dynamodb::Client as DynamodbClient;
 use aws_sdk_dynamodb::types::AttributeValue;
 
 fn 
-tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
+tail_and_send_log(path: &str, 
+                  sender: Sender<(String,String)>) -> Result<()> {
     let mut tail_process = Command::new("tail")
         .args(["-f","-n0","-q", &path])
         .stdout(Stdio::piped())
@@ -27,7 +28,8 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
         let reader = BufReader::new(stdout);
         for line in reader.lines() {
             if let Ok(line) = line {
-                sender.send(line).expect("Failed to send data");
+                let tup = ("DateGoesHere".to_string(), line);
+                sender.send(tup).expect("Failed to send data");
             }
         }
     });
@@ -35,8 +37,9 @@ tail_and_send_log(path: &str, sender: Sender<String>) -> Result<()> {
 }
 
 pub async fn 
-//start_log_stream<T: DataHandler>(paths: Vec<String>, client: &T) -> Result<()> {
-start_log_stream(paths: Vec<String>) -> Result<()> {
+start_log_stream(config: DynamoDBConfig) -> Result<()> {
+    println!("{config:?}");
+
     let (tx,rx) = channel();
     ctrlc::set_handler(move || {
         println!("handle ctrlc signal");
@@ -48,33 +51,32 @@ start_log_stream(paths: Vec<String>) -> Result<()> {
     let mut clients = Vec::<_>::new();
     let mut log_count = 0;
 
-    //println!("{:?}",client.show());
-
-    for input_log_file in paths.clone().into_iter() {
+    for package in config.package {
         log_count += 1;
-        if let Ok(client) = dynamosdk::create_client().await {
+        if let Ok(client) = dynamosdk::create_client(package.table).await {
             clients.push(client);
         }
 
-        let (sender, receiver) = channel();
+        // channel tuple (time, data)
+        let (sender, receiver) = channel::<(String, String)>();
         senders.push(sender);
         receivers.push(receiver);
          
         let sender_clone = senders.last().unwrap().clone();
+        
         thread::spawn(move || {
-            tail_and_send_log(&input_log_file, sender_clone)
+            tail_and_send_log(&package.source, sender_clone)
                 .expect("Failed to tail log file");
         });
     }
 
     let iter = zip(receivers.into_iter(), clients);
-    for (receiver, client) in iter {
-    //for receiver in receivers.into_iter() {
+    for (receiver, wrapper) in iter {
         thread::spawn(move || {
             let tokio_handle = tokio::runtime::Runtime::new().unwrap();
-                tokio_handle.block_on(async {
-                    client.handle_log_data(receiver).await;
-                });
+            tokio_handle.block_on(async {
+                wrapper.handle_log_data(receiver).await;
+            });
         });
     }
 
