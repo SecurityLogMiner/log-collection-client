@@ -23,12 +23,16 @@ struct MenuOption {
     description: &'static str,
 }
 
+// Menu option implementation.
+// Contains the name and description of the menu option.
 impl MenuOption {
     fn new(name: &'static str, description: &'static str) -> Self {
         MenuOption { name, description }
     }
 }
 
+// Stateful list implementation.
+// Contains the state of the list and the items in the list.
 impl StatefulList {
     // Create stateful list with menu options.
     fn with_menu_options(items: [MenuOption; 4]) -> StatefulList{
@@ -53,6 +57,9 @@ pub struct App{
     pub items: StatefulList,
 }
 
+// Application implementation.
+// Contains the state of the application and the items in the menu.
+// The state of the application is used to keep track of the menu position.
 impl<'a> App {
     // Default constructor for the application.
     fn default() -> Self {
@@ -87,6 +94,8 @@ impl<'a> App {
     }
 
     // Navigate the menu up.
+    // If the counter is greater than 0, it decrements the counter
+    // and updates the selected menu item.
     pub fn navigate_menu_up(&mut self) {
         if self.counter > 0 {
             self.counter -= 1;
@@ -97,6 +106,8 @@ impl<'a> App {
     }
 
     // Navigate the menu down.
+    // If the counter is less than the maximum number of menu items,
+    // it increments the counter and updates the selected menu item.
     pub fn navigate_menu_down(&mut self) {
         if self.counter < MAX_MENU_ITEMS {
             self.counter += 1;
@@ -107,6 +118,7 @@ impl<'a> App {
     }
 
     // Select the current menu item.
+    // If a menu item is selected, it prints its content.
     pub fn navigate_menu_select(&mut self) {
         if let Some(selected_item) = self.state.selected() {
             if let Some(content) = self.items.items.get(selected_item) {

@@ -102,44 +102,44 @@ pub async fn run_admin_cli(){
     let iam_client = iam::start_iam().await;
     match iam_client {
         Ok(client) => {
+
+            // Check if the user is an admin
             let user = iam::get_user(&client).await.unwrap();
             if iam::is_admin_user(&user.user.as_ref().unwrap(), &client).await {
                 // Set up standard input and output
                 let stdin = io::stdin();
                 let mut stdout = io::stdout();
-        
-                // Print a message indicating the start of the Administrator AWS CLI
+
                 println!("\nRunning Administrator AWS CLI:");
                 // Start a loop to continuously receive and process user input
                 loop {
+
                     // Prompt the user for input
-                    print!("aws> ");
                     // Ensure the prompt is displayed immediately by flushing the output
+                    // Read user input from the standard input then check if the user wants to exit
+                    print!("aws> ");
                     stdout.flush().unwrap();
-        
-                    // Read user input from the standard input
                     let mut input = String::new();
                     stdin.read_line(&mut input).unwrap();
-        
-                    // Check if the user wants to exit the CLI
                     if input.trim().eq_ignore_ascii_case("exit") {
                         break;
                     }
         
                     // Split the input into individual arguments
-                    let args: Vec<&str> = input.trim().split_whitespace().collect();
                     // If there are no arguments, continue to the next iteration of the loop
+                    let args: Vec<&str> = input.trim().split_whitespace().collect();
                     if args.is_empty() {
                         continue;
                     }
         
                     // Execute the AWS CLI command with the provided arguments
+                    // The command is executed using the Command struct from the std::process module
+                    // This is a blocking operation and will wait for the command to finish before continuing
                     let output = Command::new("aws")
                         .args(&args)
                         .output()
                         .expect("Failed to execute command");
         
-                    // Write the command output to the standard output and standard error
                     io::stdout().write_all(&output.stdout).unwrap();
                     io::stderr().write_all(&output.stderr).unwrap();
                 } 

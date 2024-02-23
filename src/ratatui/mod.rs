@@ -15,6 +15,13 @@ use std::io;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 
+/*
+    Serves as the main function for the user interface.
+    It initializes the terminal user interface, creates an application,
+    and starts the main loop.
+
+    Returns the result of the user interface.
+*/
 pub fn ratatui_main() -> AppResult<()> {
     // Create an application.
     let mut app = App::new();

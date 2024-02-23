@@ -12,7 +12,7 @@ use aws_sdk_iam::types::{AccessKey, Policy, PolicyScopeType, Role, User};
 
 // #[::tokio::main]
 
-
+// Start the IAM client
 pub async fn
 start_iam() -> Result<Client, Error> {
     let config = aws_config::load_from_env().await;
@@ -20,6 +20,7 @@ start_iam() -> Result<Client, Error> {
     Ok(client)
 }
 
+// List users
 pub async fn list_users(
     client: &Client,
     path_prefix: Option<String>,
@@ -36,6 +37,7 @@ pub async fn list_users(
     Ok(response)
 }
 
+// List groups for user
 pub async fn list_groups_for_user(
     client: &Client,
     user_name: String,
@@ -50,7 +52,7 @@ pub async fn list_groups_for_user(
     Ok(response)
 }
 
-
+// Check if user is in admin group
 pub async fn is_admin_user(user: &User, iam_client: &Client) -> bool {
     let user_name = user.user_name.clone(); 
 
@@ -77,7 +79,7 @@ pub async fn is_admin_user(user: &User, iam_client: &Client) -> bool {
     }
 }
 
-
+// Get user
 pub async fn get_user(
     client: &Client,
 ) -> Result<GetUserOutput, SdkError<GetUserError>> {

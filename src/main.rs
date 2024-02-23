@@ -8,7 +8,7 @@ mod ratatui;
 
 // use aws_config::imds::Client;
 use ratatui::ratatui_main;
-// use producer::start_log_stream;
+use producer::start_log_stream;
 use config::read_config;
 use std::env;
 // use util::{print_help, send_logs_to_all_destinations};

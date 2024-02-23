@@ -6,6 +6,9 @@ use aws_sdk_dynamodb::operation::create_table::{CreateTableOutput,CreateTableErr
 use crate::config::{Package};
 
 #[async_trait]
+// Define the DataHandler trait
+// This trait provides methods to handle data
+// from the log channel
 pub trait DataHandler {
     async fn check_table(&self) -> bool;
     async fn create_table(&self) -> Result<CreateTableOutput, String>;

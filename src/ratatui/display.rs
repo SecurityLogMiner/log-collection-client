@@ -7,7 +7,10 @@ use ratatui::{
 
 use crate::ratatui::app::App;
 
-// Renders the user interface widgets.
+/*
+    Renders the user interface through widgets
+    and returns the result.
+*/
 pub fn render(app: &mut App, frame: &mut Frame) {
     // This is where you add new widgets.
     // See the following resources:
