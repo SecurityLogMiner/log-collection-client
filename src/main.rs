@@ -2,6 +2,7 @@ mod traits;
 mod config;
 mod producer;
 mod dynamosdk;
+mod menu;
 mod util;
 mod iam;
 
@@ -10,10 +11,13 @@ use producer::start_log_stream;
 use config::read_config;
 use std::{env, process};
 use util::{print_help};
+use menu::{show_menu};
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     let args: Vec<String> = env::args().collect();
+
+    let _ = show_menu();
 
     if args.len() <= 2 {
         let config_data = read_config();
