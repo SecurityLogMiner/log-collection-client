@@ -93,6 +93,7 @@ impl<'a> App {
         self.running = false;
     }
 
+
     // Navigate the menu up.
     // If the counter is greater than 0, it decrements the counter
     // and updates the selected menu item.

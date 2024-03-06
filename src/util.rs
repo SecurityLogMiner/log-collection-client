@@ -17,13 +17,9 @@ pub struct UserDisplay<'a>(pub &'a aws_sdk_iam::types::User);
 pub async fn print_help() {
     println!("Usage: cargo run -- <destination>");
     println!("Available Destinations:");
-    println!("  all            Send logs to all locations");
     println!("  dynamodb       Create DynamoDB table");
-    println!("  kdf            Send logs to Kinesis Firehose");
-    println!("  s3             Send logs to S3 bucket");
     println!("  iam            Test iam features");
-    println!("  run-admin      Connecto to the Administrator AWS CLI");
-    println!("  elastic        Send logs to Elastic");
+    println!("  run-admin      Connect to the Administrator AWS CLI");
     process::exit(0);
 }
 
