@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use std::sync::mpsc::{Receiver};
 use aws_sdk_dynamodb::Client as DynamodbClient;
-use aws_sdk_firehose::Client as OpenSearchClient;
 use aws_sdk_dynamodb::operation::create_table::{CreateTableOutput,CreateTableError};
 use crate::config::{Package};
 

@@ -102,7 +102,6 @@ impl<'a> App {
             self.counter -= 1;
             let prev = self.state.selected().map_or(0, |i| i.saturating_sub(1));
             self.state.select(Some(prev));
-            self.update_selected_menu_item();
         }
     }
 
@@ -114,41 +113,36 @@ impl<'a> App {
             self.counter += 1;
             let next = self.state.selected().map_or(0, |i| i + 1);
             self.state.select(Some(next.min(self.items.items.len() as usize - 1)));
-            self.update_selected_menu_item();
         }
     }
 
     // Select the current menu item.
     // If a menu item is selected, it prints its content.
     pub fn navigate_menu_select(&mut self) {
-        if let Some(selected_item) = self.state.selected() {
-            if let Some(content) = self.items.items.get(selected_item) {
-                println!("{:?}", content);
-            }
-        }
+        println!("Selected item: {}", self.items.items[self.state.selected().unwrap()]);
     }
 
-    // Update the selected menu item.
-    pub fn update_selected_menu_item(&self) {
-        match self.counter {
-            0 => {
-                // Handle selection 0
-            }
-            1 => {
-                // Handle selection 1
-            }
-            2 => {
-                // Handle selection 2
-            }
-            3 => {
-                // Handle selection 3
-            }
-            4 => {
-                // Handle selection 4
-            }
-            _ => {
-                // Handle invalid selection
-            }
-        }
-    }
+    // // Update the selected menu item.
+    // pub fn update_selected_menu_item(&self, selected_item: usize) {
+    //     match selected_item {
+    //         0 => {
+    //             println!("Selected item: {}", self.items.items[self.state.selected().unwrap()]);
+    //         }
+    //         1 => {
+    //             // Handle selection 1
+    //         }
+    //         2 => {
+    //             // Handle selection 2
+    //         }
+    //         3 => {
+    //             // Handle selection 3
+    //         }
+    //         4 => {
+    //             // Handle selection 4
+    //         }
+    //         _ => {
+    //             // Handle invalid selection
+    //         }
+    //     }
+    // }
 }
