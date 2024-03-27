@@ -17,7 +17,7 @@ use menu::{show_menu};
 async fn main() -> Result<(), std::io::Error> {
     let args: Vec<String> = env::args().collect();
 
-    let _ = show_menu();
+    //let _ = show_menu();
 
     if args.len() <= 2 {
         let config_data = read_config();
@@ -59,6 +59,8 @@ async fn main() -> Result<(), std::io::Error> {
             None => panic!("Error reading configuration. Fix it."),
         }
     } 
+
+    println!("testing systemd");
 
     Ok(())
 }
