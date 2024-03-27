@@ -56,7 +56,8 @@ start_log_stream(config: DynamoDBConfig) -> Result<()> {
         if let Ok(client) = dynamosdk::create_client(package.table).await {
             clients.push(client);
         }
-
+ 
+        type Date
         // channel tuple (time, data)
         let (sender, receiver) = channel::<(String, String)>();
         senders.push(sender);
